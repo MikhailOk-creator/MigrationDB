@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: none
+    username: none
+    password: none
+    driver-class-name: org.postgresql.Driver
+  main:
+    allow-bean-definition-overriding: true
