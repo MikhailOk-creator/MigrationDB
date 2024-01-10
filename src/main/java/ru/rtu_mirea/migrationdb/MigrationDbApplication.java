@@ -35,71 +35,84 @@ public class MigrationDbApplication {
     }
 
     @Bean
-    public CommandLineRunner run (JdbcTemplate jdbcTemplate) {
+    public CommandLineRunner run (JdbcTemplate jdbcTemplate1, JdbcTemplate jdbcTemplate2) {
         return args -> {
             Scanner scanner = new Scanner(System.in);
 
-            System.out.print("Choose the DBMS:" + '\n' +
-                    "1) PostgreSQL;" + '\n' +
-                    "2) MySQL;" + '\n' +
-                    "3) Oracle" + '\n' +
-                    "-> ");
-            int dbmsChoice = scanner.nextInt();
+            System.out.println('\n' + "Database 1");
+            ConnectionData connectionData1 = commandLineEnter(scanner);
 
-            String dbDriverClassName, dbms, host, nameDB, usernameDB, passwordDB;
-            int port;
+            assert connectionData1 != null;
+            configureForDB1(jdbcTemplate1, connectionData1);
+            testDatabaseConnection(jdbcTemplate1, connectionData1.getNameDB());
 
-            System.out.print("Enter the host: ");
-            host = scanner.next();
-            System.out.print("Enter the port: ");
-            port = scanner.nextInt();
-            System.out.print("Enter the name of the database: ");
-            nameDB = scanner.next();
-            System.out.print("Enter the username: ");
-            usernameDB = scanner.next();
-            System.out.print("Enter the password: ");
-            passwordDB = scanner.next();
 
-            switch (dbmsChoice) {
-                case 1:
-                    dbDriverClassName = "org.postgresql.Driver";
-                    dbms = "postgresql";
-                    break;
-                case 2:
-                    dbDriverClassName = "com.mysql.cj.jdbc.Driver";
-                    dbms = "mysql";
-                    break;
-                case 3:
-                    dbDriverClassName = "oracle.jdbc.driver.OracleDriver";
-                    dbms = "oracle";
-                    break;
-                default:
-                    System.out.println("Invalid choice. Exiting.");
-                    return;
-            }
+            System.out.println('\n'+"Database 2");
+            ConnectionData connectionData2 = commandLineEnter(scanner);
 
-            configureForDB1(jdbcTemplate, dbms, host, port, nameDB, usernameDB, passwordDB, dbDriverClassName);
-
-            testDatabaseConnection(jdbcTemplate, nameDB);
+            assert connectionData2 != null;
+            configureForDB1(jdbcTemplate2, connectionData2);
+            testDatabaseConnection(jdbcTemplate2, connectionData2.getNameDB());
         };
     }
 
-    private void configureForDB1(JdbcTemplate jdbcTemplate,
-                                 String dbms,
-                                 String host,
-                                 int port,
-                                 String name,
-                                 String username,
-                                 String password,
-                                 String driver) {
-        if (dbms.equals("oracle")) {
-            db1Url = String.format("jdbc:oracle:thin:@%s:%d:%s", host, port, name);
-        } else {
-            db1Url = String.format("jdbc:%s://%s:%d/%s", dbms, host, port, name);
+    public static ConnectionData commandLineEnter (Scanner scanner) {
+        ConnectionData connectionData = new ConnectionData();
+
+        System.out.print("Choose the DBMS:" + '\n' +
+                "1) PostgreSQL;" + '\n' +
+                "2) MySQL;" + '\n' +
+                "3) Oracle" + '\n' +
+                "-> ");
+        int dbmsChoice = scanner.nextInt();
+
+        // Set connection data to the first connection
+        System.out.print("Enter the host: ");
+        connectionData.setHost(scanner.next());
+        System.out.print("Enter the port: ");
+        connectionData.setPort(scanner.nextInt());
+        System.out.print("Enter the name of the database: ");
+        connectionData.setNameDB(scanner.next());
+        System.out.print("Enter the username: ");
+        connectionData.setUsernameDB(scanner.next());
+        System.out.print("Enter the password: ");
+        connectionData.setPasswordDB(scanner.next());
+
+        connectionData = setDBMS(connectionData, dbmsChoice);
+
+        return connectionData;
+    }
+
+    private static ConnectionData setDBMS(ConnectionData connectionData, int dbmsChoice) {
+        switch (dbmsChoice) {
+            case 1:
+                connectionData.setDbDriverClassName("org.postgresql.Driver");
+                connectionData.setDbms("postgresql");
+                break;
+            case 2:
+                connectionData.setDbDriverClassName("com.mysql.cj.jdbc.Driver");
+                connectionData.setDbms("mysql");
+                break;
+            case 3:
+                connectionData.setDbDriverClassName("oracle.jdbc.driver.OracleDriver");
+                connectionData.setDbms("oracle");
+                break;
+            default:
+                System.out.println("Invalid choice. Exiting.");
+                return null;
         }
-        db1Username = username;
-        db1Password = password;
-        db1DriverClassName = driver;
+        return connectionData;
+    }
+
+    private void configureForDB1(JdbcTemplate jdbcTemplate, ConnectionData connectionData) {
+        if (connectionData.getDbms().equals("oracle")) {
+            db1Url = String.format("jdbc:oracle:thin:@%s:%d:%s", connectionData.getHost(), connectionData.getPort(), connectionData.getNameDB());
+        } else {
+            db1Url = String.format("jdbc:%s://%s:%d/%s", connectionData.getDbms(), connectionData.getHost(), connectionData.getPort(), connectionData.getNameDB());
+        }
+        db1Username = connectionData.getUsernameDB();
+        db1Password = connectionData.getPasswordDB();
+        db1DriverClassName = connectionData.getDbDriverClassName();
 
         DataSource dataSource = DatabaseConfig.postgreSQLDataSource(db1Url, db1Username, db1Password);
 
