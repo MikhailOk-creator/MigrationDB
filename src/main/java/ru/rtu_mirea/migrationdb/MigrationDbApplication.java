@@ -8,6 +8,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 @SpringBootApplication
@@ -24,6 +27,8 @@ public class MigrationDbApplication {
 
     @Value("${spring.datasource.driver-class-name}")
     private String db1DriverClassName;
+
+    private final String sqlRepository = "src/main/resources/sql";
 
     public static void main(String[] args) {
         SpringApplication.run(MigrationDbApplication.class, args);
@@ -53,6 +58,34 @@ public class MigrationDbApplication {
             assert connectionData2 != null;
             configureForDB1(jdbcTemplate2, connectionData2);
             testDatabaseConnection(jdbcTemplate2, connectionData2.getNameDB());
+
+            ArrayList<String> tables1 = getNameOfAllTables(jdbcTemplate1);
+            System.out.println('\n' + "Tables in " + connectionData1.getNameDB() + " database:");
+            for (String table : tables1) {
+                System.out.println(table);
+            }
+
+            // Matrix of connections between tables
+            int[][] connections = new int[tables1.size()][tables1.size()];
+            for (String table : tables1) {
+                try {
+                    ArrayList<String>connections_between_one = getInfoAboutConnectionOfTables(table, jdbcTemplate1);
+                    for (String connection : connections_between_one) {
+                        int index = tables1.indexOf(connection);
+                        connections[tables1.indexOf(table)][index] = 1;
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error: " + e.getMessage());
+                }
+            }
+
+            System.out.println('\n' + "Matrix of connections between tables:");
+            for (int i = 0; i < tables1.size(); i++) {
+                for (int j = 0; j < tables1.size(); j++) {
+                    System.out.print(connections[i][j] + " ");
+                }
+                System.out.println();
+            }
         };
     }
 
@@ -127,5 +160,24 @@ public class MigrationDbApplication {
         } catch (Exception e) {
             System.out.println(dbName + " Database connection unsuccessful. Error: " + e.getMessage());
         }
+    }
+
+    private ArrayList<String> getNameOfAllTables(JdbcTemplate jdbcTemplate) throws Exception {
+        String source_sql = readSqlFromFile(sqlRepository + "/all_tables.sql");
+        return (ArrayList<String>) jdbcTemplate.query(source_sql, (rs, rowNum) -> {
+            return rs.getString("table_name");
+        });
+    }
+
+    private ArrayList<String> getInfoAboutConnectionOfTables(String nameOfTable, JdbcTemplate jdbcTemplate) throws Exception {
+        String source_sql = readSqlFromFile(sqlRepository + "/table_connections.sql");
+        String sql = String.format(source_sql, nameOfTable);
+        return  (ArrayList<String>) jdbcTemplate.query(sql, (rs, rowNum) -> {
+            return rs.getString("foreign_table_name");
+        });
+    }
+
+    private String readSqlFromFile(String filePath) throws Exception {
+        return Files.readString(Path.of(filePath));
     }
 }
