@@ -11,6 +11,7 @@ import javax.sql.DataSource;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 @SpringBootApplication
@@ -52,13 +53,13 @@ public class MigrationDbApplication {
             testDatabaseConnection(jdbcTemplate1, connectionData1.getNameDB());
 
 
-            System.out.println('\n'+"Database 2");
+           /* System.out.println('\n'+"Database 2");
             ConnectionData connectionData2 = commandLineEnter(scanner);
 
             assert connectionData2 != null;
             configureForDB1(jdbcTemplate2, connectionData2);
             testDatabaseConnection(jdbcTemplate2, connectionData2.getNameDB());
-
+            */
             ArrayList<String> tables1 = getNameOfAllTables(jdbcTemplate1);
             System.out.println('\n' + "Tables in " + connectionData1.getNameDB() + " database:");
             for (String table : tables1) {
@@ -85,6 +86,28 @@ public class MigrationDbApplication {
                     System.out.print(connections[i][j] + " ");
                 }
                 System.out.println();
+            }
+
+            // Topological sort of the graph
+            TopologicalSort g = new TopologicalSort(tables1.size());
+            for (int i = 0; i < tables1.size(); i++) {
+                for (int j = 0; j < tables1.size(); j++) {
+                    if (connections[i][j] == 1) {
+                        g.addEdge(i, j);
+                    }
+                }
+            }
+            System.out.println('\n' + "Topological sort of the graph:");
+            String result = g.topologicalSort();
+            int[] resultArray = Arrays.stream(result.split(" ")).mapToInt(Integer::parseInt).toArray();
+            // reverse array
+            for (int i = 0; i < resultArray.length / 2; i++) {
+                int temp = resultArray[i];
+                resultArray[i] = resultArray[resultArray.length - i - 1];
+                resultArray[resultArray.length - i - 1] = temp;
+            }
+            for (int j : resultArray) {
+                System.out.print(tables1.get(j) + " ");
             }
         };
     }
