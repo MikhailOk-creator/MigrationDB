@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -129,6 +130,16 @@ public class MigrationDbApplication {
                     System.out.println(column);
                 }
                 System.out.println();
+            }
+
+            // Export data from all tables to CSV
+            ExportToCSV exportOrigToCSV = new ExportToCSV(jdbcTemplate1);
+            for (int i = 0; i < tables1.size(); i++) {
+                try {
+                    exportOrigToCSV.exportTableToCsv(tables1.get(resultArray[i]));
+                } catch (IOException e) {
+                    System.out.println("Error: " + e.getMessage());
+                }
             }
         };
     }
