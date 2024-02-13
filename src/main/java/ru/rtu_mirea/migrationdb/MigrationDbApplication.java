@@ -11,9 +11,7 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Scanner;
+import java.util.*;
 
 @SpringBootApplication
 public class MigrationDbApplication {
@@ -69,9 +67,12 @@ public class MigrationDbApplication {
 
             // Matrix of connections between tables
             int[][] connections = new int[tables1.size()][tables1.size()];
+            // Map of connections between tables (key - table_name, value - list of relations (RelationData))
+            Map<String, ArrayList<RelationData>> relations = new HashMap<>();
             for (String table : tables1) {
                 try {
-                    ArrayList<String>connections_between_one = getInfoAboutConnectionOfTables(table, jdbcTemplate1);
+                    ArrayList<String>connections_between_one = getInfoAboutConnectionOfTablesToMatrix(table, jdbcTemplate1);
+                    relations.put(table, getInfoAboutConnectionOfTablesToClass(table, jdbcTemplate1));
                     for (String connection : connections_between_one) {
                         int index = tables1.indexOf(connection);
                         connections[tables1.indexOf(table)][index] = 1;
@@ -113,9 +114,11 @@ public class MigrationDbApplication {
 
             // Info about columns of all tables
             ArrayList<ArrayList<ColumnInfo>> allColumnsInTables = new ArrayList<>();
+            Map<String, ArrayList<String>> primaryKeys = new HashMap<>();
             for (String table : tables1) {
                 try {
                     ArrayList<ColumnInfo> columns = getInfoAboutColumnsOfTable(table, jdbcTemplate1);
+                    primaryKeys.put(table, getPrimaryKeyOfTable(table, jdbcTemplate1));
                     allColumnsInTables.add(columns);
                 } catch (Exception e) {
                     System.out.println("Error: " + e.getMessage());
@@ -138,6 +141,19 @@ public class MigrationDbApplication {
                 try {
                     exportOrigToCSV.exportTableToCsv(tables1.get(resultArray[i]));
                 } catch (IOException e) {
+                    System.out.println("Error: " + e.getMessage());
+                }
+            }
+
+            // Create SQL for all tables
+            CreateSQL createSQL = new CreateSQL();
+            ArrayList<String> sql_scripts = new ArrayList<>();
+            for (int i = 0; i < tables1.size(); i++) {
+                try {
+                    String sql = createSQL.createSQLForTable(tables1.get(resultArray[i]), allColumnsInTables.get(resultArray[i]), connections, resultArray[i], tables1, relations, primaryKeys);
+                    sql_scripts.add(sql);
+                    System.out.println(sql);
+                } catch (Exception e) {
                     System.out.println("Error: " + e.getMessage());
                 }
             }
@@ -224,11 +240,24 @@ public class MigrationDbApplication {
         });
     }
 
-    private ArrayList<String> getInfoAboutConnectionOfTables(String nameOfTable, JdbcTemplate jdbcTemplate) throws Exception {
+    private ArrayList<String> getInfoAboutConnectionOfTablesToMatrix(String nameOfTable, JdbcTemplate jdbcTemplate) throws Exception {
         String source_sql = readSqlFromFile(sqlRepository + "/table_connections.sql");
         String sql = String.format(source_sql, nameOfTable);
         return  (ArrayList<String>) jdbcTemplate.query(sql, (rs, rowNum) -> {
             return rs.getString("foreign_table_name");
+        });
+    }
+
+    private ArrayList<RelationData> getInfoAboutConnectionOfTablesToClass (String nameOfTable, JdbcTemplate jdbcTemplate) throws Exception {
+        String source_sql = readSqlFromFile(sqlRepository + "/table_connections.sql");
+        String sql = String.format(source_sql, nameOfTable);
+        return (ArrayList<RelationData>) jdbcTemplate.query(sql, (rs, rowNum) -> {
+            RelationData relationData = new RelationData();
+            relationData.setTableName(rs.getString("table_name"));
+            relationData.setColumnName(rs.getString("column_name"));
+            relationData.setRefTableName(rs.getString("foreign_table_name"));
+            relationData.setRefColumnName(rs.getString("foreign_column_name"));
+            return relationData;
         });
     }
 
@@ -241,7 +270,7 @@ public class MigrationDbApplication {
             columnInfo.setTableSchema(rs.getString("table_schema"));
             columnInfo.setOrdinalPosition(rs.getInt("ordinal_position"));
             columnInfo.setNullable(rs.getString("is_nullable").equals("YES"));
-            columnInfo.setDataType(rs.getString("data_type"));
+            columnInfo.setDataType(rs.getString("udt_name"));
             columnInfo.setIdentity(rs.getString("is_identity").equals("YES"));
             columnInfo.setIdentityGeneration(rs.getString("identity_generation"));
             columnInfo.setIdentityStart(rs.getString("identity_start"));
@@ -252,6 +281,14 @@ public class MigrationDbApplication {
             columnInfo.setUpdatable(rs.getString("is_updatable").equals("YES"));
             columnInfo.setColumnDefault(rs.getString("column_default"));
             return columnInfo;
+        });
+    }
+
+    private ArrayList<String> getPrimaryKeyOfTable(String nameOfTable, JdbcTemplate jdbcTemplate) throws Exception {
+        String source_sql = readSqlFromFile(sqlRepository + "/primary_key_of_table.sql");
+        String sql = String.format(source_sql, nameOfTable);
+        return (ArrayList<String>) jdbcTemplate.query(sql, (rs, rowNum) -> {
+            return rs.getString("column_name");
         });
     }
 

@@ -3,7 +3,7 @@ SELECT
     table_schema,
     ordinal_position,
     is_nullable,
-    data_type,
+    udt_name,
     is_identity,
     identity_generation,
     identity_start,
