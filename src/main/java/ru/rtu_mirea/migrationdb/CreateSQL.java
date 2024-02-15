@@ -11,7 +11,9 @@ public class CreateSQL {
                                     ArrayList<String> tables,
                                     Map<String, ArrayList<RelationData>> relations,
                                     Map<String, ArrayList<String>> primaryKeys) {
-        StringBuilder sql = new StringBuilder("CREATE TABLE " + tableName + " IF NOT EXIST (\n");
+        StringBuilder sql = new StringBuilder("CREATE TABLE " + tableName  + " (");
+        ArrayList<RelationData> tableRelations = relations.get(tableName);
+        int flag = 0;
         for (ColumnInfo column : tableColumns) {
             sql.append(column.getColumnName()).append(" ").append(column.getDataType());
             if (column.isNullable()) {
@@ -33,22 +35,38 @@ public class CreateSQL {
                 sql.append(" DEFAULT ").append(column.getColumnDefault());
             }
             ArrayList<String> primaryKeysForTable = primaryKeys.get(tableName);
-            if (primaryKeysForTable != null && primaryKeysForTable.contains(column.getColumnName())) {
+            if (primaryKeysForTable != null && primaryKeysForTable.size() == 1 && primaryKeysForTable.contains(column.getColumnName())) {
                 sql.append(" PRIMARY KEY");
             }
-            sql.append(",\n");
+            if (flag != tableColumns.size() - 1 && tableRelations != null) {
+                sql.append(",");
+                flag++;
+            }
+        }
+
+        ArrayList<String> primaryKeysForTable = primaryKeys.get(tableName);
+        if (primaryKeysForTable != null && primaryKeysForTable.size() > 1) {
+            sql.append(", PRIMARY KEY (");
+            for (int i = 0; i < primaryKeysForTable.size(); i++) {
+                sql.append(primaryKeysForTable.get(i));
+                if (i != primaryKeysForTable.size() - 1) {
+                    sql.append(", ");
+                }
+            }
+            sql.append(")");
         }
 
         // Add foreign keys
-        ArrayList<RelationData> tableRelations = relations.get(tableName);
+        flag = 0;
         if (tableRelations != null) {
             for (RelationData relation : tableRelations) {
-                sql.append("FOREIGN KEY (").append(relation.getColumnName()).append(") REFERENCES ")
-                            .append(relation.getRefTableName()).append("(").append(relation.getRefColumnName()).append("),\n");
+                sql.append(", FOREIGN KEY (").append(relation.getColumnName()).append(") REFERENCES ")
+                        .append(relation.getRefTableName()).append("(").append(relation.getRefColumnName())
+                        .append(")");
             }
         }
 
-        sql.append(");\n");
+        sql.append(")");
         return sql.toString();
     }
 }

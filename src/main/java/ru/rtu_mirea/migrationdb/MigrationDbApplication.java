@@ -52,13 +52,14 @@ public class MigrationDbApplication {
             testDatabaseConnection(jdbcTemplate1, connectionData1.getNameDB());
 
 
-           /* System.out.println('\n'+"Database 2");
+            System.out.println('\n'+"Database 2");
             ConnectionData connectionData2 = commandLineEnter(scanner);
 
             assert connectionData2 != null;
             configureForDB1(jdbcTemplate2, connectionData2);
             testDatabaseConnection(jdbcTemplate2, connectionData2.getNameDB());
-            */
+
+            configureForDB1(jdbcTemplate1, connectionData1);
             ArrayList<String> tables1 = getNameOfAllTables(jdbcTemplate1);
             System.out.println('\n' + "Tables in " + connectionData1.getNameDB() + " database:");
             for (String table : tables1) {
@@ -146,6 +147,7 @@ public class MigrationDbApplication {
             }
 
             // Create SQL for all tables
+            System.out.println('\n');
             CreateSQL createSQL = new CreateSQL();
             ArrayList<String> sql_scripts = new ArrayList<>();
             for (int i = 0; i < tables1.size(); i++) {
@@ -156,6 +158,25 @@ public class MigrationDbApplication {
                 } catch (Exception e) {
                     System.out.println("Error: " + e.getMessage());
                 }
+            }
+
+            // Create tables in new database
+            configureForDB1(jdbcTemplate2, connectionData2);
+            System.out.println('\n' + "Creating tables in " + connectionData2.getNameDB() + " database:");
+            int i = 0;
+            for (String sql : sql_scripts) {
+                try {
+                    jdbcTemplate2.execute(sql);
+                    System.out.println("Table created successfully");
+                    i++;
+                } catch (Exception e) {
+                    System.out.println("Error: " + e.getMessage());
+                }
+            }
+            if (i == tables1.size()) {
+                System.out.println("All tables created successfully");
+            } else {
+                System.out.println("Some tables were not created");
             }
         };
     }
