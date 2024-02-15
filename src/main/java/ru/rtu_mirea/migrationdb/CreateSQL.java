@@ -6,9 +6,6 @@ import java.util.Map;
 public class CreateSQL {
     public String createSQLForTable(String tableName,
                                     ArrayList<ColumnInfo> tableColumns,
-                                    int[][] connections,
-                                    int index_in_matrix_of_connections,
-                                    ArrayList<String> tables,
                                     Map<String, ArrayList<RelationData>> relations,
                                     Map<String, ArrayList<String>> primaryKeys) {
         StringBuilder sql = new StringBuilder("CREATE TABLE " + tableName  + " (");

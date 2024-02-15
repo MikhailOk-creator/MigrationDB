@@ -152,7 +152,7 @@ public class MigrationDbApplication {
             ArrayList<String> sql_scripts = new ArrayList<>();
             for (int i = 0; i < tables1.size(); i++) {
                 try {
-                    String sql = createSQL.createSQLForTable(tables1.get(resultArray[i]), allColumnsInTables.get(resultArray[i]), connections, resultArray[i], tables1, relations, primaryKeys);
+                    String sql = createSQL.createSQLForTable(tables1.get(resultArray[i]), allColumnsInTables.get(resultArray[i]), relations, primaryKeys);
                     sql_scripts.add(sql);
                     System.out.println(sql);
                 } catch (Exception e) {
