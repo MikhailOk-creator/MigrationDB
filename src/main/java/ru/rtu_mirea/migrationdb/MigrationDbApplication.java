@@ -183,8 +183,7 @@ public class MigrationDbApplication {
 
         System.out.print("Choose the DBMS:" + '\n' +
                 "1) PostgreSQL;" + '\n' +
-                "2) MySQL;" + '\n' +
-                "3) Oracle" + '\n' +
+                "2) Oracle" + '\n' +
                 "-> ");
         int dbmsChoice = scanner.nextInt();
 
@@ -212,10 +211,6 @@ public class MigrationDbApplication {
                 connectionData.setDbms("postgresql");
                 break;
             case 2:
-                connectionData.setDbDriverClassName("com.mysql.cj.jdbc.Driver");
-                connectionData.setDbms("mysql");
-                break;
-            case 3:
                 connectionData.setDbDriverClassName("oracle.jdbc.driver.OracleDriver");
                 connectionData.setDbms("oracle");
                 break;
