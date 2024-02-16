@@ -8,7 +8,7 @@ public class CreateSQL {
                                     ArrayList<ColumnInfo> tableColumns,
                                     Map<String, ArrayList<RelationData>> relations,
                                     Map<String, ArrayList<String>> primaryKeys) {
-        StringBuilder sql = new StringBuilder("CREATE TABLE " + tableName  + " (");
+        StringBuilder sql = new StringBuilder("CREATE TABLE IF NOT EXISTS " + tableName  + " (");
         ArrayList<RelationData> tableRelations = relations.get(tableName);
         int flag = 0;
         for (ColumnInfo column : tableColumns) {
