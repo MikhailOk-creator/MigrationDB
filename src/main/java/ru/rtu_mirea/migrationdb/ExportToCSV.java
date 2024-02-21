@@ -30,9 +30,6 @@ public class ExportToCSV {
             writeHeader(tableName, csvWriter);
 
             // Write data
-            // List<String> rows = jdbcTemplate.query(sql, getRowMapper());
-
-            // Make map of rows
             List<String> rows = jdbcTemplate.query(sql, (resultSet, i) -> {
                 StringBuilder row = new StringBuilder();
                 for (int j = 1; j <= resultSet.getMetaData().getColumnCount(); j++) {
@@ -40,6 +37,9 @@ public class ExportToCSV {
                 }
                 return row.toString();
             });
+            /*for (String row : rows) {
+                csvWriter.append(row).append("\n");
+            };*/
 
             for (String row : rows) {
                 csvWriter.append(row).append("\n");
@@ -57,8 +57,8 @@ public class ExportToCSV {
     }
 
     private void writeHeader(String tableName, FileWriter csvWriter) throws IOException {
-        String headerSql = String.format("SELECT * FROM %s WHERE 1 = 0", tableName);
-        List<String> columnNames = jdbcTemplate.query(headerSql, getRowMapper());
+        String headerSql = String.format("SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = '%s'", tableName);
+        List<String> columnNames = jdbcTemplate.query(headerSql, (resultSet, i) -> resultSet.getString("column_name"));
 
         // Join column names with commas
         String header = String.join(",", columnNames);
