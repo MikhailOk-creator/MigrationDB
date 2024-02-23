@@ -1,0 +1,19 @@
+services:
+  database-1:
+    container_name: database_orig
+    image: postgres:15-alpine
+    ports:
+      - "54321:5432"
+    env_file:
+      - env_files/db1.env
+    volumes:
+      - ./scripts/init:/docker-entrypoint-initdb.d/
+  database-2:
+    container_name: database_copy
+    image: postgres:15-alpine
+    ports:
+      - "54322:5432"
+    env_file:
+      - env_files/db2.env
+    # volumes:
+    #   - ./scripts/init_2:/docker-entrypoint-initdb.d/
