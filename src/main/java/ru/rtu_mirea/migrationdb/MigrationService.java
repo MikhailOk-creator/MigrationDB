@@ -96,6 +96,7 @@ public class MigrationService {
         System.out.println('\n' + "Topological sort of the graph:");
         String result = g.topologicalSort();
         int[] resultArray = Arrays.stream(result.split(" ")).mapToInt(Integer::parseInt).toArray();
+        ArrayList<String> tables2_Sorted = new ArrayList<>();
         // reverse array
         for (int i = 0; i < resultArray.length / 2; i++) {
             int temp = resultArray[i];
@@ -104,86 +105,71 @@ public class MigrationService {
         }
         for (int j : resultArray) {
             System.out.print(tables1.get(j) + " ");
+            tables2_Sorted.add(tables1.get(j));
         }
 
-        // Info about columns of all tables
-        ArrayList<ArrayList<ColumnInfo>> allColumnsInTables = new ArrayList<>();
+        // Get info about columns of tables and create tables
+        ArrayList<ColumnInfo> columns;
         Map<String, ArrayList<String>> primaryKeys = new HashMap<>();
-        for (String table : tables1) {
-            try {
-                ArrayList<ColumnInfo> columns = informationBySQL.getInfoAboutColumnsOfTable(table, jdbcTemplate1);
-                primaryKeys.put(table, informationBySQL.getPrimaryKeyOfTable(table, jdbcTemplate1));
-                allColumnsInTables.add(columns);
-            } catch (Exception e) {
-                System.out.println("Error: " + e.getMessage());
-            }
-        }
-
-        // Print info about columns of all tables
-        System.out.println('\n' + "Info about columns of all tables:");
-        for (int i = 0; i < tables1.size(); i++) {
-            System.out.println("Table: " + tables1.get(i));
-            for (ColumnInfo column : allColumnsInTables.get(i)) {
-                System.out.println(column);
-            }
-            System.out.println();
-        }
-
-        // Export data from all tables to CSV
         ExportToCSV exportOrigToCSV = new ExportToCSV(jdbcTemplate1);
-        for (int i = 0; i < tables1.size(); i++) {
-            try {
-                exportOrigToCSV.exportTableToCsv(tables1.get(resultArray[i]));
-            } catch (IOException e) {
-                System.out.println("Error: " + e.getMessage());
-            }
-        }
-
-        // Create SQL for all tables
-        System.out.println('\n');
         CreateSQL createSQL = new CreateSQL();
-        ArrayList<String> sql_scripts = new ArrayList<>();
-        for (int i = 0; i < tables1.size(); i++) {
+        String SQL_script_for_creating_table = "";
+        for (String table : tables2_Sorted) {
             try {
-                String sql = createSQL.createSQLForTable(tables1.get(resultArray[i]), allColumnsInTables.get(resultArray[i]), relations, primaryKeys);
-                sql_scripts.add(sql);
-                System.out.println(sql);
+                System.out.println('\n' + "Table: " + table);
+
+                columns = informationBySQL.getInfoAboutColumnsOfTable(table, jdbcTemplate1);
+                primaryKeys.put(table, informationBySQL.getPrimaryKeyOfTable(table, jdbcTemplate1));
+
+                // Print info about columns of all tables
+                System.out.println('\n' + "Info about columns of all in table " + table);
+                for (ColumnInfo column : columns) {
+                    System.out.println(column);
+                }
+                System.out.println();
+
+                // Export data from all tables to CSV
+                try {
+                    exportOrigToCSV.exportTableToCsv(table);
+                } catch (IOException e) {
+                    System.out.println("Error: " + e.getMessage());
+                }
+
+                // Create SQL for all tables
+                System.out.println('\n');
+                try {
+                    SQL_script_for_creating_table = createSQL.createSQLForTable(table, columns, relations, primaryKeys);
+                    System.out.println(SQL_script_for_creating_table);
+                } catch (Exception e) {
+                    System.out.println("Error: " + e.getMessage());
+                }
+
+                // Create table in new database
+                configureForDBPostgres(jdbcTemplate2, connectionData2);
+                System.out.println('\n' + "Creating tables in " + connectionData2.getNameDB() + " database:");
+                try {
+                    jdbcTemplate2.execute(SQL_script_for_creating_table);
+                    System.out.println("Table created successfully");
+                } catch (Exception e) {
+                    System.out.println("Error: " + e.getMessage());
+                }
+
+                System.out.println('\n' + "Importing data to new database...");
+                // TODO: Add method to import data from CSV to new database
+                /*configureForDBPostgres(jdbcTemplate2, connectionData2);
+                CsvDataImporter csvDataImporter = new CsvDataImporter(jdbcTemplate2);
+                for (int j = 0; j < tables1.size(); j++) {
+                    try {
+                        csvDataImporter.importCsvDataToTable(tables1.get(resultArray[j]));
+                        System.out.println("Data imported to table: " + tables1.get(resultArray[j]));
+                    } catch (IOException e) {
+                        System.out.println("Error: " + e.getMessage());
+                    }
+                }*/
             } catch (Exception e) {
                 System.out.println("Error: " + e.getMessage());
             }
         }
-
-        // Create tables in new database
-        configureForDBPostgres(jdbcTemplate2, connectionData2);
-        System.out.println('\n' + "Creating tables in " + connectionData2.getNameDB() + " database:");
-        int i = 0;
-        for (String sql : sql_scripts) {
-            try {
-                jdbcTemplate2.execute(sql);
-                System.out.println("Table created successfully");
-                i++;
-            } catch (Exception e) {
-                System.out.println("Error: " + e.getMessage());
-            }
-        }
-        if (i == tables1.size()) {
-            System.out.println("All tables created successfully");
-        } else {
-            System.out.println("Some tables were not created");
-        }
-
-        System.out.println("Importing data to new database...");
-        // TODO: Add method to import data from CSV to new database
-        /*configureForDBPostgres(jdbcTemplate2, connectionData2);
-        CsvDataImporter csvDataImporter = new CsvDataImporter(jdbcTemplate2);
-        for (int j = 0; j < tables1.size(); j++) {
-            try {
-                csvDataImporter.importCsvDataToTable(tables1.get(resultArray[j]));
-                System.out.println("Data imported to table: " + tables1.get(resultArray[j]));
-            } catch (IOException e) {
-                System.out.println("Error: " + e.getMessage());
-            }
-        }*/
         return true;
     }
 
