@@ -37,8 +37,6 @@ public class MigrationService {
         JdbcTemplate jdbcTemplate1 = new JdbcTemplate();
         JdbcTemplate jdbcTemplate2 = new JdbcTemplate();
 
-        Scanner scanner = new Scanner(System.in);
-
         assert connectionData1 != null;
         configureForDBPostgres(jdbcTemplate1, connectionData1);
         testDatabaseConnection(jdbcTemplate1, connectionData1.getNameDB());
@@ -111,15 +109,24 @@ public class MigrationService {
         // Get info about columns of tables and create tables
         ArrayList<ColumnInfo> columns;
         Map<String, ArrayList<String>> primaryKeys = new HashMap<>();
+        ArrayList<String> generatedColumns = new ArrayList<>();
         ExportToCSV exportOrigToCSV = new ExportToCSV(jdbcTemplate1);
+        CsvDataImporter csvDataImporter = new CsvDataImporter(jdbcTemplate2);
         CreateSQL createSQL = new CreateSQL();
-        String SQL_script_for_creating_table = "";
+        String SQLScriptForCreatingTable = "";
         for (String table : tables2_Sorted) {
             try {
                 System.out.println('\n' + "Table: " + table);
 
                 columns = informationBySQL.getInfoAboutColumnsOfTable(table, jdbcTemplate1);
                 primaryKeys.put(table, informationBySQL.getPrimaryKeyOfTable(table, jdbcTemplate1));
+
+                // get generated columns
+                for (ColumnInfo column : columns) {
+                    if (column.isIdentity()) {
+                        generatedColumns.add(column.getColumnName());
+                    }
+                }
 
                 // Print info about columns of all tables
                 System.out.println('\n' + "Info about columns of all in table " + table);
@@ -133,41 +140,45 @@ public class MigrationService {
                     exportOrigToCSV.exportTableToCsv(table);
                 } catch (IOException e) {
                     System.out.println("Error: " + e.getMessage());
+                    return false;
                 }
 
                 // Create SQL for all tables
                 System.out.println('\n');
                 try {
-                    SQL_script_for_creating_table = createSQL.createSQLForTable(table, columns, relations, primaryKeys);
-                    System.out.println(SQL_script_for_creating_table);
+                    SQLScriptForCreatingTable = createSQL.createSQLForTable(table, columns, relations, primaryKeys);
+                    System.out.println(SQLScriptForCreatingTable);
                 } catch (Exception e) {
                     System.out.println("Error: " + e.getMessage());
+                    return false;
                 }
 
                 // Create table in new database
                 configureForDBPostgres(jdbcTemplate2, connectionData2);
                 System.out.println('\n' + "Creating tables in " + connectionData2.getNameDB() + " database:");
                 try {
-                    jdbcTemplate2.execute(SQL_script_for_creating_table);
+                    jdbcTemplate2.execute(SQLScriptForCreatingTable);
                     System.out.println("Table created successfully");
                 } catch (Exception e) {
                     System.out.println("Error: " + e.getMessage());
+                    return false;
                 }
 
                 System.out.println('\n' + "Importing data to new database...");
-                // TODO: Add method to import data from CSV to new database
-                /*configureForDBPostgres(jdbcTemplate2, connectionData2);
-                CsvDataImporter csvDataImporter = new CsvDataImporter(jdbcTemplate2);
-                for (int j = 0; j < tables1.size(); j++) {
-                    try {
-                        csvDataImporter.importCsvDataToTable(tables1.get(resultArray[j]));
-                        System.out.println("Data imported to table: " + tables1.get(resultArray[j]));
-                    } catch (IOException e) {
-                        System.out.println("Error: " + e.getMessage());
-                    }
-                }*/
+                configureForDBPostgres(jdbcTemplate2, connectionData2);
+                try {
+                    csvDataImporter.importCsvDataToTable(table, generatedColumns);
+                    System.out.println("Data imported to table: " + table);
+                } catch (IOException e) {
+                    System.out.println("Error: " + e.getMessage());
+                    return false;
+                }
+
+                // Delete all CSV files from the project that have not been deleted for some reason
+                csvDataImporter.deleteAllCsvFiles();
             } catch (Exception e) {
                 System.out.println("Error: " + e.getMessage());
+                return false;
             }
         }
         return true;
