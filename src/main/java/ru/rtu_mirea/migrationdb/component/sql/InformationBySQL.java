@@ -1,6 +1,8 @@
-package ru.rtu_mirea.migrationdb;
+package ru.rtu_mirea.migrationdb.component.sql;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import ru.rtu_mirea.migrationdb.entity.ColumnInfo;
+import ru.rtu_mirea.migrationdb.entity.RelationData;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

@@ -1,4 +1,4 @@
-package ru.rtu_mirea.migrationdb;
+package ru.rtu_mirea.migrationdb.component.csv;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;

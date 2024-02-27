@@ -1,4 +1,4 @@
-package ru.rtu_mirea.migrationdb;
+package ru.rtu_mirea.migrationdb.component;
 
 /*
     * Topological sort (DFS) of a graph represented as an adjacency list

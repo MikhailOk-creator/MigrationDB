@@ -6,6 +6,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import ru.rtu_mirea.migrationdb.component.*;
+import ru.rtu_mirea.migrationdb.component.csv.CsvDataImporter;
+import ru.rtu_mirea.migrationdb.component.csv.ExportToCSV;
+import ru.rtu_mirea.migrationdb.component.sql.CreateSQL;
+import ru.rtu_mirea.migrationdb.component.sql.DatabaseConfig;
+import ru.rtu_mirea.migrationdb.component.sql.InformationBySQL;
+import ru.rtu_mirea.migrationdb.entity.ColumnInfo;
+import ru.rtu_mirea.migrationdb.entity.ConnectionData;
+import ru.rtu_mirea.migrationdb.entity.RelationData;
 
 import javax.sql.DataSource;
 import java.io.IOException;

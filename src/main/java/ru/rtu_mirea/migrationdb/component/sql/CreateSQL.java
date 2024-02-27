@@ -1,4 +1,7 @@
-package ru.rtu_mirea.migrationdb;
+package ru.rtu_mirea.migrationdb.component.sql;
+
+import ru.rtu_mirea.migrationdb.entity.ColumnInfo;
+import ru.rtu_mirea.migrationdb.entity.RelationData;
 
 import java.util.ArrayList;
 import java.util.Map;

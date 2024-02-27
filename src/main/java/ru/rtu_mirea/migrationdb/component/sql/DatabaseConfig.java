@@ -1,4 +1,4 @@
-package ru.rtu_mirea.migrationdb;
+package ru.rtu_mirea.migrationdb.component.sql;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

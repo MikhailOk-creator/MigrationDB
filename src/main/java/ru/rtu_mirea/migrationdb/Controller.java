@@ -3,6 +3,8 @@ package ru.rtu_mirea.migrationdb;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.rtu_mirea.migrationdb.entity.ConnectionData;
+import ru.rtu_mirea.migrationdb.entity.ConnectionsDataDTO;
 
 @RestController
 @CrossOrigin(origins = "*")

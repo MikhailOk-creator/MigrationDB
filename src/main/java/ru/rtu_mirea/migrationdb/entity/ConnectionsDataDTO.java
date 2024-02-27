@@ -1,4 +1,4 @@
-package ru.rtu_mirea.migrationdb;
+package ru.rtu_mirea.migrationdb.entity;
 
 import lombok.Data;
 
