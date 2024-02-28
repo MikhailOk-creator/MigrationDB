@@ -61,10 +61,7 @@ public class MigrationService {
         configureForDBPostgres(jdbcTemplate1, connectionData1);
         InformationBySQL informationBySQL = new InformationBySQL();
         ArrayList<String> tables1 = informationBySQL.getNameOfAllTables(jdbcTemplate1);
-        System.out.println('\n' + "Tables in " + connectionData1.getNameDB() + " database:");
-        for (String table : tables1) {
-            System.out.println(table);
-        }
+        log.info("Tables in {} database: {}", connectionData1.getNameDB(), tables1);
 
         // Matrix of connections between tables
         int[][] connections = new int[tables1.size()][tables1.size()];
@@ -79,17 +76,10 @@ public class MigrationService {
                     connections[tables1.indexOf(table)][index] = 1;
                 }
             } catch (Exception e) {
-                System.out.println("Error: " + e.getMessage());
+                log.error("Error: {}", e.getMessage());
             }
         }
-
-        System.out.println('\n' + "Matrix of connections between tables:");
-        for (int i = 0; i < tables1.size(); i++) {
-            for (int j = 0; j < tables1.size(); j++) {
-                System.out.print(connections[i][j] + " ");
-            }
-            System.out.println();
-        }
+        log.info("Matrix of connections between tables: {}", Arrays.deepToString(connections));
 
         // Topological sort of the graph
         TopologicalSort g = new TopologicalSort(tables1.size());
@@ -100,7 +90,6 @@ public class MigrationService {
                 }
             }
         }
-        System.out.println('\n' + "Topological sort of the graph:");
         String result = g.topologicalSort();
         int[] resultArray = Arrays.stream(result.split(" ")).mapToInt(Integer::parseInt).toArray();
         ArrayList<String> tables2_Sorted = new ArrayList<>();
@@ -111,9 +100,9 @@ public class MigrationService {
             resultArray[resultArray.length - i - 1] = temp;
         }
         for (int j : resultArray) {
-            System.out.print(tables1.get(j) + " ");
             tables2_Sorted.add(tables1.get(j));
         }
+        log.info("Tables in {} database sorted by topological sort: {}", connectionData1.getNameDB(), tables2_Sorted);
 
         // Get info about columns of tables and create tables
         ArrayList<ColumnInfo> columns;
@@ -125,7 +114,7 @@ public class MigrationService {
         String SQLScriptForCreatingTable = "";
         for (String table : tables2_Sorted) {
             try {
-                System.out.println('\n' + "Table: " + table);
+                log.info("Table: {}", table);
 
                 columns = informationBySQL.getInfoAboutColumnsOfTable(table, jdbcTemplate1);
                 primaryKeys.put(table, informationBySQL.getPrimaryKeyOfTable(table, jdbcTemplate1));
@@ -137,59 +126,54 @@ public class MigrationService {
                     }
                 }
 
-                // Print info about columns of all tables
-                System.out.println('\n' + "Info about columns of all in table " + table);
-                for (ColumnInfo column : columns) {
-                    System.out.println(column);
-                }
-                System.out.println();
+                log.info("Info about columns of all in table {}", table);
 
                 // Export data from all tables to CSV
                 try {
                     exportOrigToCSV.exportTableToCsv(table);
                 } catch (IOException e) {
-                    System.out.println("Error: " + e.getMessage());
+                    log.error("Error: {}", e.getMessage());
                     return false;
                 }
 
                 // Create SQL for all tables
-                System.out.println('\n');
                 try {
                     SQLScriptForCreatingTable = createSQL.createSQLForTable(table, columns, relations, primaryKeys);
-                    System.out.println(SQLScriptForCreatingTable);
+                    log.info("SQL for creating table: {}", SQLScriptForCreatingTable);
                 } catch (Exception e) {
-                    System.out.println("Error: " + e.getMessage());
+                    log.error("Error: {}", e.getMessage());
                     return false;
                 }
 
                 // Create table in new database
                 configureForDBPostgres(jdbcTemplate2, connectionData2);
-                System.out.println('\n' + "Creating tables in " + connectionData2.getNameDB() + " database:");
+                log.info("Creating table in {} database...", connectionData2.getNameDB());
                 try {
                     jdbcTemplate2.execute(SQLScriptForCreatingTable);
-                    System.out.println("Table created successfully");
+                    log.info("Table created in {} database", connectionData2.getNameDB());
                 } catch (Exception e) {
-                    System.out.println("Error: " + e.getMessage());
+                    log.info("Error: {}", e.getMessage());
                     return false;
                 }
 
-                System.out.println('\n' + "Importing data to new database...");
+                log.info("Importing data to table: {}", table);
                 configureForDBPostgres(jdbcTemplate2, connectionData2);
                 try {
                     csvDataImporter.importCsvDataToTable(table, generatedColumns);
-                    System.out.println("Data imported to table: " + table);
+                    log.info("Data imported to table: {}", table);
                 } catch (IOException e) {
-                    System.out.println("Error: " + e.getMessage());
+                    log.error("Error: {}", e.getMessage());
                     return false;
                 }
 
                 // Delete all CSV files from the project that have not been deleted for some reason
                 csvDataImporter.deleteAllCsvFiles();
             } catch (Exception e) {
-                System.out.println("Error: " + e.getMessage());
+                log.error("Error: {}", e.getMessage());
                 return false;
             }
         }
+        log.info("Migration successful!");
         return true;
     }
 
@@ -197,9 +181,9 @@ public class MigrationService {
         try {
             // Attempt to connect to the database
             jdbcTemplate.queryForObject("SELECT 1", Integer.class);
-            System.out.println(dbName + " Database connection successful!");
+            log.info("{} Database connection successful!", dbName);
         } catch (Exception e) {
-            System.out.println(dbName + " Database connection unsuccessful. Error: " + e.getMessage());
+            log.error("{} Database connection unsuccessful. Error: {}", dbName, e.getMessage());
         }
     }
 

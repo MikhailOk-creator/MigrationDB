@@ -44,8 +44,6 @@ public class ExportToCSV {
             for (String row : rows) {
                 csvWriter.append(row).append("\n");
             }
-
-            System.out.println("Data exported to " + outputFile);
         }
     }
 
