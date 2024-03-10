@@ -1,15 +1,17 @@
-package ru.rtu_mirea.migrationdb;
+package ru.rtu_mirea.migrationdb.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.rtu_mirea.migrationdb.MigrationService;
 import ru.rtu_mirea.migrationdb.entity.ConnectionData;
 import ru.rtu_mirea.migrationdb.entity.ConnectionsDataDTO;
+import ru.rtu_mirea.migrationdb.entity.ResultOfMigration;
 
 @RestController
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
-public class Controller {
+public class MigrationController {
     private final MigrationService migrationService;
 
     @PostMapping("/migrate")
@@ -36,10 +38,11 @@ public class Controller {
                 return ResponseEntity.badRequest().body("Migration failed: one or more fields are empty");
             }
 
-            if(migrationService.migration(connectionData1, connectionData2)) {
-                return ResponseEntity.ok("Migration completed successfully");
+            ResultOfMigration result = migrationService.migration(connectionData1, connectionData2);
+            if (result.isStatus()) {
+                return ResponseEntity.ok(result.getMessage());
             } else {
-                return ResponseEntity.badRequest().body("Migration failed");
+                return ResponseEntity.badRequest().body("Migration failed" + '\n' + result.getMessage());
             }
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Migration failed: " + e.getMessage());

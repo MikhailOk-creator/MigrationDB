@@ -15,6 +15,7 @@ import ru.rtu_mirea.migrationdb.component.sql.InformationBySQL;
 import ru.rtu_mirea.migrationdb.entity.ColumnInfo;
 import ru.rtu_mirea.migrationdb.entity.ConnectionData;
 import ru.rtu_mirea.migrationdb.entity.RelationData;
+import ru.rtu_mirea.migrationdb.entity.ResultOfMigration;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -42,21 +43,22 @@ public class MigrationService {
         return new JdbcTemplate(dataSource);
     }
 
-    public boolean migration(ConnectionData connectionData1, ConnectionData connectionData2) throws Exception {
+    public ResultOfMigration migration(ConnectionData connectionData1, ConnectionData connectionData2) throws Exception {
         JdbcTemplate jdbcTemplate1 = new JdbcTemplate();
         JdbcTemplate jdbcTemplate2 = new JdbcTemplate();
+        ResultOfMigration resultOfMigration = new ResultOfMigration();
 
-        assert connectionData1 != null;
-        configureForDBPostgres(jdbcTemplate1, connectionData1);
-        testDatabaseConnection(jdbcTemplate1, connectionData1.getNameDB());
+        if (!checkConnectionToDatabase(jdbcTemplate1, connectionData1)) {
+            resultOfMigration.setStatus(false);
+            resultOfMigration.setMessage("Connection to " + connectionData1.getNameDB() + " database failed");
+            return resultOfMigration;
+        }
 
-
-        assert connectionData2 != null;
-        configureForDBPostgres(jdbcTemplate2, connectionData2);
-        testDatabaseConnection(jdbcTemplate2, connectionData2.getNameDB());
-
-        configureForDBPostgres(jdbcTemplate2, connectionData2);
-        testDatabaseConnection(jdbcTemplate2, connectionData2.getNameDB());
+        if (!checkConnectionToDatabase(jdbcTemplate2, connectionData2)) {
+            resultOfMigration.setStatus(false);
+            resultOfMigration.setMessage("Connection to " + connectionData2.getNameDB() + " database failed");
+            return resultOfMigration;
+        }
 
         configureForDBPostgres(jdbcTemplate1, connectionData1);
         InformationBySQL informationBySQL = new InformationBySQL();
@@ -133,7 +135,10 @@ public class MigrationService {
                     exportOrigToCSV.exportTableToCsv(table);
                 } catch (IOException e) {
                     log.error("Error: {}", e.getMessage());
-                    return false;
+                    resultOfMigration.setStatus(false);
+                    resultOfMigration.setMessage("Error to export data from " + table + " table." + '\n' +
+                            "Error: " + e.getMessage());
+                    return resultOfMigration;
                 }
 
                 // Create SQL for all tables
@@ -142,7 +147,10 @@ public class MigrationService {
                     log.info("SQL for creating table: {}", SQLScriptForCreatingTable);
                 } catch (Exception e) {
                     log.error("Error: {}", e.getMessage());
-                    return false;
+                    resultOfMigration.setStatus(false);
+                    resultOfMigration.setMessage("Error to create SQL for " + table + " table." + '\n' +
+                            "Error: " + e.getMessage());
+                    return resultOfMigration;
                 }
 
                 // Create table in new database
@@ -153,7 +161,10 @@ public class MigrationService {
                     log.info("Table created in {} database", connectionData2.getNameDB());
                 } catch (Exception e) {
                     log.info("Error: {}", e.getMessage());
-                    return false;
+                    resultOfMigration.setStatus(false);
+                    resultOfMigration.setMessage("Error to create table in " + connectionData2.getNameDB() + " database." + '\n' +
+                            "Error: " + e.getMessage());
+                    return resultOfMigration;
                 }
 
                 log.info("Importing data to table: {}", table);
@@ -163,31 +174,50 @@ public class MigrationService {
                     log.info("Data imported to table: {}", table);
                 } catch (IOException e) {
                     log.error("Error: {}", e.getMessage());
-                    return false;
+                    resultOfMigration.setStatus(false);
+                    resultOfMigration.setMessage("Error to import data to " + table + " table." + '\n' +
+                            "Error: " + e.getMessage());
+                    return resultOfMigration;
                 }
 
                 // Delete all CSV files from the project that have not been deleted for some reason
                 csvDataImporter.deleteAllCsvFiles();
             } catch (Exception e) {
                 log.error("Error: {}", e.getMessage());
-                return false;
+                resultOfMigration.setStatus(false);
+                resultOfMigration.setMessage("Error to migrate " + table + " table." + '\n' +
+                        "Error: " + e.getMessage());
             }
         }
         log.info("Migration successful!");
-        return true;
+        resultOfMigration.setStatus(true);
+        resultOfMigration.setMessage("Migration completed successfully");
+        return resultOfMigration;
     }
 
-    public void testDatabaseConnection(JdbcTemplate jdbcTemplate, String dbName) {
+    private boolean checkConnectionToDatabase(JdbcTemplate jdbcTemplate, ConnectionData connectionData) {
+        try{
+            configureForDBPostgres(jdbcTemplate, connectionData);
+            return testDatabaseConnection(jdbcTemplate, connectionData.getNameDB());
+        } catch (Exception e) {
+            log.error("Error: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    private boolean testDatabaseConnection(JdbcTemplate jdbcTemplate, String dbName) {
         try {
             // Attempt to connect to the database
             jdbcTemplate.queryForObject("SELECT 1", Integer.class);
             log.info("{} Database connection successful!", dbName);
+            return true;
         } catch (Exception e) {
             log.error("{} Database connection unsuccessful. Error: {}", dbName, e.getMessage());
+            return false;
         }
     }
 
-    public void configureForDBPostgres(JdbcTemplate jdbcTemplate, ConnectionData connectionData) {
+    private void configureForDBPostgres(JdbcTemplate jdbcTemplate, ConnectionData connectionData) {
         if (connectionData.getDbms().equals("oracle")) {
             db1Url = String.format("jdbc:oracle:thin:@%s:%d:%s", connectionData.getHost(), connectionData.getPort(), connectionData.getNameDB());
         } else {
