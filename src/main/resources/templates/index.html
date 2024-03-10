@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Migration between Databases</title>
+</head>
+<body>
+    <h1>Migration between Databases</h1>
+    <br>
+    <div>
+        <form action="migrate_web" method="post">
+            <label for="host1">Host of source database</label>
+            <input type="text" id="host1" name="host1" value="localhost">
+            <br>
+            <label for="port1">Port of source database</label>
+            <input type="text" id="port1" name="port1" value="54321">
+            <br>
+            <label for="database1">Name of source database</label>
+            <input type="text" id="database1" name="database1" value="db_orig">
+            <br>
+            <label for="user1">Username of source database</label>
+            <input type="text" id="user1" name="user1" value="postgres">
+            <br>
+            <label for="password1">Password of source database</label>
+            <input type="password" id="password1" name="password1" value="su">
+            <br>
+            <label>Database management system of source database</label>
+            <select id="dbms1" name="dbms1">
+                <option value="postgres">PostgreSQL</option>
+            </select>
+            <br>
+            <br>
+            <label for="host2">Host of target database</label>
+            <input type="text" id="host2" name="host2" value="localhost">
+            <br>
+            <label for="port2">Port of target database</label>
+            <input type="text" id="port2" name="port2" value="54322">
+            <br>
+            <label for="database2">Name of target database</label>
+            <input type="text" id="database2" name="database2" value="db_copy">
+            <br>
+            <label for="user2">Username of target database</label>
+            <input type="text" id="user2" name="user2" value="postgres">
+            <br>
+            <label for="password2">Password of target database</label>
+            <input type="password" id="password2" name="password2" value="su">
+            <br>
+            <label>Database management system of target database</label>
+            <select id="dbms2" name="dbms2">
+                <option value="postgres">PostgreSQL</option>
+            </select>
+            <br>
+            <br>
+            <button type="migrate">Migrate</button>
+        </form>
+    </div>
+    <div>
+        <h2>Migration status</h2>
+        <p th:text="${status}"></p>
+    </div>
+</body>
+</html>
