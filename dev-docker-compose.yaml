@@ -1,0 +1,17 @@
+services:
+  app:
+    container_name: migration_DB
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - /logs:/logs
+    depends_on:
+      - migration_service_db
+    env_file: .env
+  migration_service_db:
+    container_name: migration_service_db
+    image: postgres:15-alpine
+    ports:
+      - "5433:5432"
+    env_file: .env

@@ -40,3 +40,4 @@ out/
 *.csv
 *.log
 *.gz
+/logs
