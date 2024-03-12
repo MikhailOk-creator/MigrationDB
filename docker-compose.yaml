@@ -1,0 +1,28 @@
+services:
+  app:
+    container_name: migration_app
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./logs:/logs
+    depends_on:
+      - database
+    environment:
+      - POSTGRES_HOST=migration_database
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=migration_database
+      - POSTGRES_USER=application
+      - POSTGRES_PASSWORD=197319792001
+
+  database:
+    container_name: migration_database
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_HOST=migration_database
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=migration_database
+      - POSTGRES_USER=application
+      - POSTGRES_PASSWORD=197319792001
