@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: migration-db
+  datasource:
+    url: jdbc:postgresql://localhost:5433/migration_database
+    username: application
+    password: 197319792001
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database: postgresql
+    generate-ddl: false
+  main:
+    allow-bean-definition-overriding: true
+logging:
+  file:
+    path: ./logs/

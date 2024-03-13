@@ -12,10 +12,8 @@ import ru.rtu_mirea.migrationdb.component.csv.ExportToCSV;
 import ru.rtu_mirea.migrationdb.component.sql.CreateSQL;
 import ru.rtu_mirea.migrationdb.component.sql.DatabaseConfig;
 import ru.rtu_mirea.migrationdb.component.sql.InformationBySQL;
-import ru.rtu_mirea.migrationdb.entity.ColumnInfo;
-import ru.rtu_mirea.migrationdb.entity.ConnectionData;
-import ru.rtu_mirea.migrationdb.entity.RelationData;
-import ru.rtu_mirea.migrationdb.entity.ResultOfMigration;
+import ru.rtu_mirea.migrationdb.entity.*;
+import ru.rtu_mirea.migrationdb.repository.*;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -37,6 +35,9 @@ public class MigrationService {
     @Value("${spring.datasource.driver-class-name}")
     private String db1DriverClassName;
 
+    private final MigrationRepository migrationRepository;
+    private final MigrationDetailRepository migrationDetailRepository;
+
 
     @Bean
     public JdbcTemplate jdbcTemplate(DataSource dataSource) {
@@ -46,6 +47,8 @@ public class MigrationService {
     public ResultOfMigration migration(ConnectionData connectionData1, ConnectionData connectionData2) throws Exception {
         JdbcTemplate jdbcTemplate1 = new JdbcTemplate();
         JdbcTemplate jdbcTemplate2 = new JdbcTemplate();
+        MigrationData migrationData = new MigrationData();
+        MigrationDetailData migrationDetailData = new MigrationDetailData();
         ResultOfMigration resultOfMigration = new ResultOfMigration();
 
         if (!checkConnectionToDatabase(jdbcTemplate1, connectionData1)) {
@@ -59,6 +62,18 @@ public class MigrationService {
             resultOfMigration.setMessage("Connection to " + connectionData2.getNameDB() + " database failed");
             return resultOfMigration;
         }
+
+        UUID migrationId = UUID.randomUUID();
+        migrationData.setId(migrationId);
+        migrationData.setSourceHost(connectionData1.getHost());
+        migrationData.setSourcePort(connectionData1.getPort());
+        migrationData.setSourceDB(connectionData1.getNameDB());
+        migrationData.setTargetHost(connectionData2.getHost());
+        migrationData.setTargetPort(connectionData2.getPort());
+        migrationData.setTargetDB(connectionData2.getNameDB());
+        migrationData.setStatus(StatusOfMigration.MIGRATING.toString());
+        migrationData.setStartTime(new Date());
+        migrationRepository.save(migrationData);
 
         configureForDBPostgres(jdbcTemplate1, connectionData1);
         InformationBySQL informationBySQL = new InformationBySQL();
@@ -115,6 +130,15 @@ public class MigrationService {
         CreateSQL createSQL = new CreateSQL();
         String SQLScriptForCreatingTable = "";
         for (String table : tables2_Sorted) {
+
+            migrationDetailData.setId(UUID.randomUUID());
+            migrationDetailData.setMigrationId(migrationId);
+            migrationDetailData.setSourceTable(table);
+            migrationDetailData.setTargetTable(table);
+            migrationDetailData.setStatus(StatusOfMigration.MIGRATING.toString());
+            Date startTimeForTable = new Date();
+            migrationDetailData.setStartTime(startTimeForTable);
+
             try {
                 log.info("Table: {}", table);
 
@@ -138,6 +162,10 @@ public class MigrationService {
                     resultOfMigration.setStatus(false);
                     resultOfMigration.setMessage("Error to export data from " + table + " table." + '\n' +
                             "Error: " + e.getMessage());
+
+                    AbortMigration(migrationDetailData, migrationData, "Error to export data from " + table + " table." + '\n' +
+                            "Error: " + e.getMessage(), startTimeForTable);
+
                     return resultOfMigration;
                 }
 
@@ -150,6 +178,10 @@ public class MigrationService {
                     resultOfMigration.setStatus(false);
                     resultOfMigration.setMessage("Error to create SQL for " + table + " table." + '\n' +
                             "Error: " + e.getMessage());
+
+                    AbortMigration(migrationDetailData, migrationData, "Error to create SQL for " + table + " table." + '\n' +
+                            "Error: " + e.getMessage(), startTimeForTable);
+
                     return resultOfMigration;
                 }
 
@@ -164,6 +196,10 @@ public class MigrationService {
                     resultOfMigration.setStatus(false);
                     resultOfMigration.setMessage("Error to create table in " + connectionData2.getNameDB() + " database." + '\n' +
                             "Error: " + e.getMessage());
+
+                    AbortMigration(migrationDetailData, migrationData, "Error to create table in " + connectionData2.getNameDB() + " database." + '\n' +
+                            "Error: " + e.getMessage(), startTimeForTable);
+
                     return resultOfMigration;
                 }
 
@@ -177,21 +213,41 @@ public class MigrationService {
                     resultOfMigration.setStatus(false);
                     resultOfMigration.setMessage("Error to import data to " + table + " table." + '\n' +
                             "Error: " + e.getMessage());
+
+                    AbortMigration(migrationDetailData, migrationData, "Error to import data to " + table + " table." + '\n' +
+                            "Error: " + e.getMessage(), startTimeForTable);
+
                     return resultOfMigration;
                 }
 
                 // Delete all CSV files from the project that have not been deleted for some reason
                 csvDataImporter.deleteAllCsvFiles();
+
+                migrationDetailData.setStatus(StatusOfMigration.DONE.toString());
+                migrationDetailData.setEndTime(new Date());
+                migrationDetailData.setDuration((double) (new Date().getTime() - startTimeForTable.getTime()));
+                migrationDetailRepository.save(migrationDetailData);
             } catch (Exception e) {
                 log.error("Error: {}", e.getMessage());
                 resultOfMigration.setStatus(false);
                 resultOfMigration.setMessage("Error to migrate " + table + " table." + '\n' +
                         "Error: " + e.getMessage());
+
+                AbortMigration(migrationDetailData, migrationData, "Error to migrate " + table + " table." + '\n' +
+                        "Error: " + e.getMessage(), startTimeForTable);
+
+                return resultOfMigration;
             }
         }
         log.info("Migration successful!");
         resultOfMigration.setStatus(true);
         resultOfMigration.setMessage("Migration completed successfully");
+
+        migrationData.setStatus(StatusOfMigration.DONE.toString());
+        migrationData.setEndTime(new Date());
+        migrationData.setDuration((double) (new Date().getTime() - migrationData.getStartTime().getTime()));
+        migrationRepository.save(migrationData);
+
         return resultOfMigration;
     }
 
@@ -215,6 +271,19 @@ public class MigrationService {
             log.error("{} Database connection unsuccessful. Error: {}", dbName, e.getMessage());
             return false;
         }
+    }
+
+    private void AbortMigration(MigrationDetailData migrationDetailData, MigrationData migrationData, String message, Date startTimeForTable) {
+        migrationDetailData.setStatus(StatusOfMigration.ABORTED.toString());
+        migrationDetailData.setEndTime(new Date());
+        migrationDetailData.setDuration((double) (new Date().getTime() - startTimeForTable.getTime()));
+        migrationDetailData.setErrorMessage(message);
+        migrationDetailRepository.save(migrationDetailData);
+
+        migrationData.setStatus(StatusOfMigration.ABORTED.toString());
+        migrationData.setEndTime(new Date());
+        migrationData.setDuration((double) (new Date().getTime() - migrationData.getStartTime().getTime()));
+        migrationRepository.save(migrationData);
     }
 
     private void configureForDBPostgres(JdbcTemplate jdbcTemplate, ConnectionData connectionData) {
