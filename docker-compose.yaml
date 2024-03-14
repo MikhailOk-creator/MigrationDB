@@ -26,3 +26,9 @@ services:
       - POSTGRES_DB=migration_database
       - POSTGRES_USER=application
       - POSTGRES_PASSWORD=197319792001
+
+  nginx:
+    image: mikhailok/nginx-proxy:0.1
+    container_name: migration_nginx_proxy
+    ports:
+      - "80:80"
