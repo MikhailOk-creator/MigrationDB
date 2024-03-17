@@ -2,6 +2,7 @@ package ru.rtu_mirea.migrationdb.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.rtu_mirea.migrationdb.MigrationService;
 import ru.rtu_mirea.migrationdb.entity.ConnectionData;
@@ -15,7 +16,7 @@ public class MigrationController {
     private final MigrationService migrationService;
 
     @PostMapping("/migrate")
-    public ResponseEntity<?> migrate(@RequestBody ConnectionsDataDTO connectionsDataDTO) {
+    public ResponseEntity<?> migrate(@RequestBody @Validated ConnectionsDataDTO connectionsDataDTO) {
         try {
             ConnectionData connectionData1 = new ConnectionData();
             connectionData1.setHost(connectionsDataDTO.getHost1());
@@ -32,11 +33,6 @@ public class MigrationController {
             connectionData2.setUsernameDB(connectionsDataDTO.getUser2());
             connectionData2.setPasswordDB(connectionsDataDTO.getPassword2());
             connectionData2 = setDBMS(connectionData2, connectionsDataDTO.getDbms2());
-
-            if(connectionData1.getHost() == null || connectionData1.getNameDB() == null || connectionData1.getUsernameDB() == null || connectionData1.getPasswordDB() == null ||
-                    connectionData2.getHost() == null || connectionData2.getNameDB() == null || connectionData2.getUsernameDB() == null || connectionData2.getPasswordDB() == null) {
-                return ResponseEntity.badRequest().body("Migration failed: one or more fields are empty");
-            }
 
             ResultOfMigration result = migrationService.migration(connectionData1, connectionData2);
             if (result.isStatus()) {
