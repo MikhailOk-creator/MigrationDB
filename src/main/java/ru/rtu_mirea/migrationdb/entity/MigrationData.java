@@ -5,18 +5,18 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.Date;
 import java.util.UUID;
 
 @Entity
-@Data
 @AllArgsConstructor
-@NoArgsConstructor
 @Table(name = "migration_t")
 public class MigrationData {
+
+    public MigrationData() {
+    }
+
     @Id
     private UUID id;
     @Column(name = "source_host", nullable = false)
@@ -41,4 +41,100 @@ public class MigrationData {
     private double duration;
     @Column(name = "error_message")
     private String errorMessage;
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public String getSourceHost() {
+        return sourceHost;
+    }
+
+    public void setSourceHost(String sourceHost) {
+        this.sourceHost = sourceHost;
+    }
+
+    public int getSourcePort() {
+        return sourcePort;
+    }
+
+    public void setSourcePort(int sourcePort) {
+        this.sourcePort = sourcePort;
+    }
+
+    public String getSourceDB() {
+        return sourceDB;
+    }
+
+    public void setSourceDB(String sourceDB) {
+        this.sourceDB = sourceDB;
+    }
+
+    public String getTargetHost() {
+        return targetHost;
+    }
+
+    public void setTargetHost(String targetHost) {
+        this.targetHost = targetHost;
+    }
+
+    public int getTargetPort() {
+        return targetPort;
+    }
+
+    public void setTargetPort(int targetPort) {
+        this.targetPort = targetPort;
+    }
+
+    public String getTargetDB() {
+        return targetDB;
+    }
+
+    public void setTargetDB(String targetDB) {
+        this.targetDB = targetDB;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Date getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(Date startTime) {
+        this.startTime = startTime;
+    }
+
+    public Date getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(Date endTime) {
+        this.endTime = endTime;
+    }
+
+    public double getDuration() {
+        return duration;
+    }
+
+    public void setDuration(double duration) {
+        this.duration = duration;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
 }

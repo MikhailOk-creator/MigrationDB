@@ -1,6 +1,5 @@
 package ru.rtu_mirea.migrationdb.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -11,9 +10,12 @@ import ru.rtu_mirea.migrationdb.entity.ResultOfMigration;
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequiredArgsConstructor
 public class MigrationController {
     private final MigrationService migrationService;
+
+    public MigrationController(MigrationService migrationService) {
+        this.migrationService = migrationService;
+    }
 
     @PostMapping("/migrate")
     public ResponseEntity<?> migrate(@RequestBody @Validated ConnectionsDataDTO connectionsDataDTO) {

@@ -1,7 +1,5 @@
 package ru.rtu_mirea.migrationdb.controller;
 
-
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,9 +11,13 @@ import ru.rtu_mirea.migrationdb.entity.ConnectionsDataDTO;
 
 @Controller
 @RequestMapping("/")
-@RequiredArgsConstructor
 public class WebController {
     private final MigrationController migrate;
+
+    public WebController(MigrationController migrate) {
+        this.migrate = migrate;
+    }
+
     @GetMapping("")
     public String index() {
         return "index";

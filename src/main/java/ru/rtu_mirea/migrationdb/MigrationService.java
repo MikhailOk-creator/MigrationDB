@@ -1,7 +1,7 @@
 package ru.rtu_mirea.migrationdb;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import ru.rtu_mirea.migrationdb.component.*;
@@ -18,12 +18,16 @@ import java.io.IOException;
 import java.util.*;
 
 @Service
-@Slf4j
-@RequiredArgsConstructor
 public class MigrationService {
-
     private final MigrationRepository migrationRepository;
     private final MigrationDetailRepository migrationDetailRepository;
+
+    public MigrationService(MigrationRepository migrationRepository, MigrationDetailRepository migrationDetailRepository) {
+        this.migrationRepository = migrationRepository;
+        this.migrationDetailRepository = migrationDetailRepository;
+    }
+
+    Logger log = LoggerFactory.getLogger(MigrationService.class);
 
     public ResultOfMigration migration(ConnectionData connectionData1, ConnectionData connectionData2) throws Exception {
         JdbcTemplate jdbcTemplate1 = new JdbcTemplate();
