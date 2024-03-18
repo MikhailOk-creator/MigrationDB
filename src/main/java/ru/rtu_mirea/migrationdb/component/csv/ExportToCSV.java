@@ -1,7 +1,6 @@
 package ru.rtu_mirea.migrationdb.component.csv;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -37,9 +36,6 @@ public class ExportToCSV {
                 }
                 return row.toString();
             });
-            /*for (String row : rows) {
-                csvWriter.append(row).append("\n");
-            };*/
 
             for (String row : rows) {
                 csvWriter.append(row).append("\n");
@@ -67,9 +63,5 @@ public class ExportToCSV {
 
     private String getOutputFilePath(String tableName) {
         return csvDirectory + "data_" + tableName + ".csv";
-    }
-
-    private RowMapper<String> getRowMapper() {
-        return (resultSet, i) -> resultSet.getString(i + 1);
     }
 }

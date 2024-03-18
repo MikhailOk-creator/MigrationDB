@@ -21,7 +21,7 @@ public class WebController {
         return "index";
     }
 
-    @PostMapping("/migrate_web")
+    @PostMapping("migrate_web")
     public String migrateWeb(@ModelAttribute ConnectionsDataDTO connectionsDataDTO, Model model) {
         try {
             String sourceDB = connectionsDataDTO.getDatabase1();

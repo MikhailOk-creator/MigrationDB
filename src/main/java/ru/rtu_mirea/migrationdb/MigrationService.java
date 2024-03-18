@@ -2,8 +2,6 @@ package ru.rtu_mirea.migrationdb;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import ru.rtu_mirea.migrationdb.component.*;
@@ -23,26 +21,9 @@ import java.util.*;
 @Slf4j
 @RequiredArgsConstructor
 public class MigrationService {
-    @Value("${spring.datasource.url}")
-    private String db1Url;
-
-    @Value("${spring.datasource.username}")
-    private String db1Username;
-
-    @Value("${spring.datasource.password}")
-    private String db1Password;
-
-    @Value("${spring.datasource.driver-class-name}")
-    private String db1DriverClassName;
 
     private final MigrationRepository migrationRepository;
     private final MigrationDetailRepository migrationDetailRepository;
-
-
-    @Bean
-    public JdbcTemplate jdbcTemplate(DataSource dataSource) {
-        return new JdbcTemplate(dataSource);
-    }
 
     public ResultOfMigration migration(ConnectionData connectionData1, ConnectionData connectionData2) throws Exception {
         JdbcTemplate jdbcTemplate1 = new JdbcTemplate();
@@ -128,7 +109,7 @@ public class MigrationService {
         ExportToCSV exportOrigToCSV = new ExportToCSV(jdbcTemplate1);
         CsvDataImporter csvDataImporter = new CsvDataImporter(jdbcTemplate2);
         CreateSQL createSQL = new CreateSQL();
-        String SQLScriptForCreatingTable = "";
+        String SQLScriptForCreatingTable;
         for (String table : tables2_Sorted) {
 
             migrationDetailData.setId(UUID.randomUUID());
@@ -287,16 +268,14 @@ public class MigrationService {
     }
 
     private void configureForDBPostgres(JdbcTemplate jdbcTemplate, ConnectionData connectionData) {
+        String db1Url;
         if (connectionData.getDbms().equals("oracle")) {
             db1Url = String.format("jdbc:oracle:thin:@%s:%d:%s", connectionData.getHost(), connectionData.getPort(), connectionData.getNameDB());
         } else {
             db1Url = String.format("jdbc:%s://%s:%d/%s", connectionData.getDbms(), connectionData.getHost(), connectionData.getPort(), connectionData.getNameDB());
         }
-        db1Username = connectionData.getUsernameDB();
-        db1Password = connectionData.getPasswordDB();
-        db1DriverClassName = connectionData.getDbDriverClassName();
 
-        DataSource dataSource = DatabaseConfig.postgreSQLDataSource(db1Url, db1Username, db1Password);
+        DataSource dataSource = DatabaseConfig.postgreSQLDataSource(db1Url, connectionData.getUsernameDB(), connectionData.getPasswordDB());
 
         jdbcTemplate.setDataSource(dataSource);
     }
