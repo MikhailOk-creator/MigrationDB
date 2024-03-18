@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.UUID;
 
@@ -22,9 +23,9 @@ public class MigrationDetailData {
     @Column(name = "status", nullable = false)
     private String status;
     @Column(name = "start_time", nullable = false)
-    private Date startTime;
+    private Timestamp startTime;
     @Column(name = "end_time")
-    private Date endTime;
+    private Timestamp endTime;
     @Column(name = "duration")
     private double duration;
     @Column(name = "error_message")
@@ -73,19 +74,19 @@ public class MigrationDetailData {
         this.status = status;
     }
 
-    public Date getStartTime() {
+    public Timestamp getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(Date startTime) {
+    public void setStartTime(Timestamp startTime) {
         this.startTime = startTime;
     }
 
-    public Date getEndTime() {
+    public Timestamp getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(Date endTime) {
+    public void setEndTime(Timestamp endTime) {
         this.endTime = endTime;
     }
 

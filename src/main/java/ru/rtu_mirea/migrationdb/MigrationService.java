@@ -15,6 +15,7 @@ import ru.rtu_mirea.migrationdb.repository.*;
 
 import javax.sql.DataSource;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.*;
 
 @Service
@@ -57,7 +58,7 @@ public class MigrationService {
         migrationData.setTargetPort(connectionData2.getPort());
         migrationData.setTargetDB(connectionData2.getNameDB());
         migrationData.setStatus(StatusOfMigration.MIGRATING.toString());
-        migrationData.setStartTime(new Date());
+        migrationData.setStartTime(new Timestamp(System.currentTimeMillis()));
         migrationRepository.save(migrationData);
 
         configureForDBPostgres(jdbcTemplate1, connectionData1);
@@ -121,7 +122,7 @@ public class MigrationService {
             migrationDetailData.setSourceTable(table);
             migrationDetailData.setTargetTable(table);
             migrationDetailData.setStatus(StatusOfMigration.MIGRATING.toString());
-            Date startTimeForTable = new Date();
+            Timestamp startTimeForTable = new Timestamp(System.currentTimeMillis());
             migrationDetailData.setStartTime(startTimeForTable);
 
             try {
@@ -209,7 +210,7 @@ public class MigrationService {
                 csvDataImporter.deleteAllCsvFiles();
 
                 migrationDetailData.setStatus(StatusOfMigration.DONE.toString());
-                migrationDetailData.setEndTime(new Date());
+                migrationDetailData.setEndTime(new Timestamp(System.currentTimeMillis()));
                 migrationDetailData.setDuration((double) (new Date().getTime() - startTimeForTable.getTime()));
                 migrationDetailRepository.save(migrationDetailData);
             } catch (Exception e) {
@@ -229,7 +230,7 @@ public class MigrationService {
         resultOfMigration.setMessage("Migration completed successfully");
 
         migrationData.setStatus(StatusOfMigration.DONE.toString());
-        migrationData.setEndTime(new Date());
+        migrationData.setEndTime(new Timestamp(System.currentTimeMillis()));
         migrationData.setDuration((double) (new Date().getTime() - migrationData.getStartTime().getTime()));
         migrationRepository.save(migrationData);
 
@@ -260,14 +261,14 @@ public class MigrationService {
 
     private void AbortMigration(MigrationDetailData migrationDetailData, MigrationData migrationData, String message, Date startTimeForTable) {
         migrationDetailData.setStatus(StatusOfMigration.ABORTED.toString());
-        migrationDetailData.setEndTime(new Date());
-        migrationDetailData.setDuration((double) (new Date().getTime() - startTimeForTable.getTime()));
+        migrationDetailData.setEndTime(new Timestamp(System.currentTimeMillis()));
+        migrationDetailData.setDuration((double) (new Timestamp(System.currentTimeMillis()).getTime() - startTimeForTable.getTime()));
         migrationDetailData.setErrorMessage(message);
         migrationDetailRepository.save(migrationDetailData);
 
         migrationData.setStatus(StatusOfMigration.ABORTED.toString());
-        migrationData.setEndTime(new Date());
-        migrationData.setDuration((double) (new Date().getTime() - migrationData.getStartTime().getTime()));
+        migrationData.setEndTime(new Timestamp(System.currentTimeMillis()));
+        migrationData.setDuration((double) (new Timestamp(System.currentTimeMillis()).getTime() - startTimeForTable.getTime()));
         migrationRepository.save(migrationData);
     }
 

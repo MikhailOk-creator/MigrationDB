@@ -7,8 +7,8 @@ CREATE TABLE IF NOT EXISTS migration_t (
     target_port int4 not null,
     target_db varchar(255) not null,
     status varchar(255) not null,
-    start_time date not null,
-    end_time date,
+    start_time timestamp not null,
+    end_time timestamp,
     duration float,
     error_message text
 );
@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS migration_detail_t (
     source_table varchar(255) not null,
     target_table varchar(255) not null,
     status varchar(255) not null,
-    start_time date not null,
-    end_time date,
+    start_time timestamp not null,
+    end_time timestamp,
     duration float,
     error_message text,
     foreign key (migration_id) references migration_t(id)
