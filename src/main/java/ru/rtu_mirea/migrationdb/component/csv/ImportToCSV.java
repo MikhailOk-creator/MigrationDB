@@ -8,15 +8,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-public class ExportToCSV {
+public class ImportToCSV {
     private final JdbcTemplate jdbcTemplate;
     private final String csvDirectory = "src/main/resources/csv/";
 
-    public ExportToCSV(JdbcTemplate jdbcTemplate) {
+    public ImportToCSV(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public void exportTableToCsv(String tableName) throws IOException {
+    public void importTableToCsv(String tableName) throws IOException {
         String sql = String.format("SELECT * FROM %s", tableName);
         String outputFile = getOutputFilePath(tableName);
 

@@ -8,15 +8,15 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CsvDataImporter {
+public class ExportFromCSV {
     private final JdbcTemplate jdbcTemplate;
     private final String csvDirectory = "src/main/resources/csv/";
 
-    public CsvDataImporter(JdbcTemplate jdbcTemplate) {
+    public ExportFromCSV(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public void importCsvDataToTable(String tableName, ArrayList<String> generatedColumns) throws IOException {
+    public void exportCsvDataToTable(String tableName, ArrayList<String> generatedColumns) throws IOException {
         String nameOfCSVFile = "data_" + tableName + ".csv";
         String pathToCSVFile = csvDirectory + nameOfCSVFile;
 
@@ -25,7 +25,7 @@ public class CsvDataImporter {
                 .filter(path -> path.toString().endsWith(nameOfCSVFile))
                 .forEach(csvFile -> {
                     try {
-                        importCsvFile(csvFile, tableName, generatedColumns);
+                        exportCsvFile(csvFile, tableName, generatedColumns);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -39,7 +39,7 @@ public class CsvDataImporter {
         }
     }
 
-    private void importCsvFile(Path csvFile, String tableName, ArrayList<String> generatedColumns) throws IOException {
+    private void exportCsvFile(Path csvFile, String tableName, ArrayList<String> generatedColumns) throws IOException {
         String headerSql = String.format("SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = '%s'", tableName);
         List<String> columnNames = jdbcTemplate.query(headerSql, (resultSet, i) -> resultSet.getString("column_name"));
         // Read data from CSV file

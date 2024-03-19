@@ -5,8 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import ru.rtu_mirea.migrationdb.component.*;
-import ru.rtu_mirea.migrationdb.component.csv.CsvDataImporter;
-import ru.rtu_mirea.migrationdb.component.csv.ExportToCSV;
+import ru.rtu_mirea.migrationdb.component.csv.ExportFromCSV;
+import ru.rtu_mirea.migrationdb.component.csv.ImportToCSV;
 import ru.rtu_mirea.migrationdb.component.sql.CreateSQL;
 import ru.rtu_mirea.migrationdb.component.sql.DatabaseConfig;
 import ru.rtu_mirea.migrationdb.component.sql.InformationBySQL;
@@ -111,8 +111,8 @@ public class MigrationService {
         ArrayList<ColumnInfo> columns;
         Map<String, ArrayList<String>> primaryKeys = new HashMap<>();
         ArrayList<String> generatedColumns = new ArrayList<>();
-        ExportToCSV exportOrigToCSV = new ExportToCSV(jdbcTemplate1);
-        CsvDataImporter csvDataImporter = new CsvDataImporter(jdbcTemplate2);
+        ImportToCSV importOrigToCSV = new ImportToCSV(jdbcTemplate1);
+        ExportFromCSV exportFromCSV = new ExportFromCSV(jdbcTemplate2);
         CreateSQL createSQL = new CreateSQL();
         String SQLScriptForCreatingTable;
         for (String table : tables2_Sorted) {
@@ -142,14 +142,14 @@ public class MigrationService {
 
                 // Export data from all tables to CSV
                 try {
-                    exportOrigToCSV.exportTableToCsv(table);
+                    importOrigToCSV.importTableToCsv(table);
                 } catch (IOException e) {
                     log.error("Error: {}", e.getMessage());
                     resultOfMigration.setStatus(false);
-                    resultOfMigration.setMessage("Error to export data from " + table + " table." + '\n' +
+                    resultOfMigration.setMessage("Error to import data from " + table + " table." + '\n' +
                             "Error: " + e.getMessage());
 
-                    AbortMigration(migrationDetailData, migrationData, "Error to export data from " + table + " table." + '\n' +
+                    AbortMigration(migrationDetailData, migrationData, "Error to import data from " + table + " table." + '\n' +
                             "Error: " + e.getMessage(), startTimeForTable);
 
                     return resultOfMigration;
@@ -189,25 +189,25 @@ public class MigrationService {
                     return resultOfMigration;
                 }
 
-                log.info("Importing data to table: {}", table);
+                log.info("Exporting data to table: {}", table);
                 configureForDBPostgres(jdbcTemplate2, connectionData2);
                 try {
-                    csvDataImporter.importCsvDataToTable(table, generatedColumns);
-                    log.info("Data imported to table: {}", table);
+                    exportFromCSV.exportCsvDataToTable(table, generatedColumns);
+                    log.info("Data exported to table: {}", table);
                 } catch (IOException e) {
                     log.error("Error: {}", e.getMessage());
                     resultOfMigration.setStatus(false);
-                    resultOfMigration.setMessage("Error to import data to " + table + " table." + '\n' +
+                    resultOfMigration.setMessage("Error to export data to " + table + " table." + '\n' +
                             "Error: " + e.getMessage());
 
-                    AbortMigration(migrationDetailData, migrationData, "Error to import data to " + table + " table." + '\n' +
+                    AbortMigration(migrationDetailData, migrationData, "Error to export data to " + table + " table." + '\n' +
                             "Error: " + e.getMessage(), startTimeForTable);
 
                     return resultOfMigration;
                 }
 
                 // Delete all CSV files from the project that have not been deleted for some reason
-                csvDataImporter.deleteAllCsvFiles();
+                exportFromCSV.deleteAllCsvFiles();
 
                 migrationDetailData.setStatus(StatusOfMigration.DONE.toString());
                 migrationDetailData.setEndTime(new Timestamp(System.currentTimeMillis()));

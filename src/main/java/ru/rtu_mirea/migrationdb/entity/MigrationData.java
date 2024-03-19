@@ -6,7 +6,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.UUID;
 
 @Entity
