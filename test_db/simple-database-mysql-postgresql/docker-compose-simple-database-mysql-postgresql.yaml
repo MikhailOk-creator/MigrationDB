@@ -1,0 +1,17 @@
+services:
+  database-1:
+    container_name: database_mysql_orig
+    image: mysql:8.0
+    ports:
+      - "33061:3306"
+    env_file:
+      - env_files/db1.env
+    volumes:
+      - ./scripts/init:/docker-entrypoint-initdb.d/
+  database-2:
+    container_name: database_postgres_copy
+    image: postgres:15-alpine
+    ports:
+      - "54325:5432"
+    env_file:
+      - env_files/db2.env
