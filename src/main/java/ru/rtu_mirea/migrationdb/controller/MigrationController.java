@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.rtu_mirea.migrationdb.MigrationService;
 import ru.rtu_mirea.migrationdb.entity.ConnectionData;
 import ru.rtu_mirea.migrationdb.entity.ConnectionsDataDTO;
+import ru.rtu_mirea.migrationdb.entity.DatabaseManagementSystem;
 import ru.rtu_mirea.migrationdb.entity.ResultOfMigration;
 
 @RestController
@@ -49,14 +50,17 @@ public class MigrationController {
 
     private static ConnectionData setDBMS(ConnectionData connectionData, String dbmsChoice) {
         switch (dbmsChoice) {
-            case "postgres":
+            case "postgresql":
                 connectionData.setDbDriverClassName("org.postgresql.Driver");
-                connectionData.setDbms("postgresql");
+                connectionData.setDbms(DatabaseManagementSystem.POSTGRESQL);
                 break;
-            case "oracle":
+            case "mysql":
+                connectionData.setDbDriverClassName("com.mysql.cj.jdbc.Driver");
+                connectionData.setDbms(DatabaseManagementSystem.MYSQL);
+            /*case "oracle":
                 connectionData.setDbDriverClassName("oracle.jdbc.driver.OracleDriver");
                 connectionData.setDbms("oracle");
-                break;
+                break;*/
             default:
                 System.out.println("Invalid choice. Exiting.");
                 return null;

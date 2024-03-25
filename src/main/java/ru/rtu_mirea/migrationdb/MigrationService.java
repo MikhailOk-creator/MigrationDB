@@ -63,7 +63,7 @@ public class MigrationService {
 
         configureForDBPostgres(jdbcTemplate1, connectionData1);
         InformationBySQL informationBySQL = new InformationBySQL();
-        ArrayList<String> tables1 = informationBySQL.getNameOfAllTables(jdbcTemplate1);
+        ArrayList<String> tables1 = informationBySQL.getNameOfAllTables(jdbcTemplate1, connectionData1.getDbms());
         log.info("Tables in {} database: {}", connectionData1.getNameDB(), tables1);
 
         // Matrix of connections between tables
@@ -72,8 +72,8 @@ public class MigrationService {
         Map<String, ArrayList<RelationData>> relations = new HashMap<>();
         for (String table : tables1) {
             try {
-                ArrayList<String>connections_between_one = informationBySQL.getInfoAboutConnectionOfTablesToMatrix(table, jdbcTemplate1);
-                relations.put(table, informationBySQL.getInfoAboutConnectionOfTablesToClass(table, jdbcTemplate1));
+                ArrayList<String>connections_between_one = informationBySQL.getInfoAboutConnectionOfTablesToMatrix(table, jdbcTemplate1, connectionData1.getDbms());
+                relations.put(table, informationBySQL.getInfoAboutConnectionOfTablesToClass(table, jdbcTemplate1, connectionData1.getDbms()));
                 for (String connection : connections_between_one) {
                     int index = tables1.indexOf(connection);
                     connections[tables1.indexOf(table)][index] = 1;
@@ -89,7 +89,7 @@ public class MigrationService {
         for (int i = 0; i < tables1.size(); i++) {
             for (int j = 0; j < tables1.size(); j++) {
                 if (connections[i][j] == 1) {
-                    g.addEdge(i, j);
+                     g.addEdge(i, j);
                 }
             }
         }
@@ -128,8 +128,8 @@ public class MigrationService {
             try {
                 log.info("Table: {}", table);
 
-                columns = informationBySQL.getInfoAboutColumnsOfTable(table, jdbcTemplate1);
-                primaryKeys.put(table, informationBySQL.getPrimaryKeyOfTable(table, jdbcTemplate1));
+                columns = informationBySQL.getInfoAboutColumnsOfTable(table, jdbcTemplate1, connectionData1.getDbms());
+                primaryKeys.put(table, informationBySQL.getPrimaryKeyOfTable(table, jdbcTemplate1, connectionData1.getDbms()));
 
                 // get generated columns
                 for (ColumnInfo column : columns) {
@@ -274,10 +274,11 @@ public class MigrationService {
 
     private void configureForDBPostgres(JdbcTemplate jdbcTemplate, ConnectionData connectionData) {
         String db1Url;
-        if (connectionData.getDbms().equals("oracle")) {
+        // TODO: switch (to low)
+        if (connectionData.getDbms().toString().equals("oracle")) {
             db1Url = String.format("jdbc:oracle:thin:@%s:%d:%s", connectionData.getHost(), connectionData.getPort(), connectionData.getNameDB());
         } else {
-            db1Url = String.format("jdbc:%s://%s:%d/%s", connectionData.getDbms(), connectionData.getHost(), connectionData.getPort(), connectionData.getNameDB());
+            db1Url = String.format("jdbc:%s://%s:%d/%s", connectionData.getDbms().toString().toLowerCase(), connectionData.getHost(), connectionData.getPort(), connectionData.getNameDB());
         }
 
         DataSource dataSource = DatabaseConfig.postgreSQLDataSource(db1Url, connectionData.getUsernameDB(), connectionData.getPasswordDB());

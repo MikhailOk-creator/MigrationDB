@@ -1,7 +1,7 @@
 package ru.rtu_mirea.migrationdb.entity;
 
 public class ConnectionData {
-    private String dbms;
+    private DatabaseManagementSystem dbms;
     private String host;
     private int port;
     private String nameDB;
@@ -12,11 +12,11 @@ public class ConnectionData {
     public ConnectionData() {
     }
 
-    public String getDbms() {
+    public DatabaseManagementSystem getDbms() {
         return dbms;
     }
 
-    public void setDbms(String dbms) {
+    public void setDbms(DatabaseManagementSystem dbms) {
         this.dbms = dbms;
     }
 
