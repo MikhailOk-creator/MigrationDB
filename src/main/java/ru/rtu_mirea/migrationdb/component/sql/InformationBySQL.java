@@ -47,14 +47,16 @@ public class InformationBySQL {
             columnInfo.setOrdinalPosition(rs.getInt("ordinal_position"));
             columnInfo.setNullable(rs.getString("is_nullable").equals("YES"));
             columnInfo.setDataType(rs.getString("udt_name"));
-            columnInfo.setIdentity(rs.getString("is_identity").equals("YES"));
-            columnInfo.setIdentityGeneration(rs.getString("identity_generation"));
-            columnInfo.setIdentityStart(rs.getString("identity_start"));
-            columnInfo.setIdentityIncrement(rs.getString("identity_increment"));
-            columnInfo.setIdentityMaximum(rs.getString("identity_maximum"));
-            columnInfo.setIdentityMinimum(rs.getString("identity_minimum"));
-            columnInfo.setIdentityCycle(String.valueOf(rs.getString("identity_cycle").equals("YES")));
-            columnInfo.setUpdatable(rs.getString("is_updatable").equals("YES"));
+            //columnInfo.setIdentity(rs.getString("is_identity").equals("YES"));
+            if (rs.getString("is_identity").equals("YES") || rs.getString("is_identity").equals("PRI")) {
+                columnInfo.setNullable(true);
+            }
+            // columnInfo.setIdentityGeneration(rs.getString("identity_generation"));
+            if (rs.getString("identity_generation").equals("ALWAYS") || rs.getString("identity_generation").equals("auto_increment")) {
+                columnInfo.setIdentityGeneration("ALWAYS");
+            } else {
+                columnInfo.setIdentityGeneration(null);
+            }
             columnInfo.setColumnDefault(rs.getString("column_default"));
             return columnInfo;
         });

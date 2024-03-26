@@ -8,12 +8,6 @@ public class ColumnInfo {
     private String dataType;
     private boolean isIdentity;
     private String identityGeneration;
-    private String identityStart;
-    private String identityIncrement;
-    private String identityMaximum;
-    private String identityMinimum;
-    private String identityCycle;
-    private boolean isUpdatable;
     private String columnDefault;
 
     public String getColumnName() {
@@ -42,30 +36,6 @@ public class ColumnInfo {
 
     public String getIdentityGeneration() {
         return identityGeneration;
-    }
-
-    public String getIdentityStart() {
-        return identityStart;
-    }
-
-    public String getIdentityIncrement() {
-        return identityIncrement;
-    }
-
-    public String getIdentityMaximum() {
-        return identityMaximum;
-    }
-
-    public String getIdentityMinimum() {
-        return identityMinimum;
-    }
-
-    public String getIdentityCycle() {
-        return identityCycle;
-    }
-
-    public boolean isUpdatable() {
-        return isUpdatable;
     }
 
     public String getColumnDefault() {
@@ -98,30 +68,6 @@ public class ColumnInfo {
 
     public void setIdentityGeneration(String identityGeneration) {
         this.identityGeneration = identityGeneration;
-    }
-
-    public void setIdentityStart(String identityStart) {
-        this.identityStart = identityStart;
-    }
-
-    public void setIdentityIncrement(String identityIncrement) {
-        this.identityIncrement = identityIncrement;
-    }
-
-    public void setIdentityMaximum(String identityMaximum) {
-        this.identityMaximum = identityMaximum;
-    }
-
-    public void setIdentityMinimum(String identityMinimum) {
-        this.identityMinimum = identityMinimum;
-    }
-
-    public void setIdentityCycle(String identityCycle) {
-        this.identityCycle = identityCycle;
-    }
-
-    public void setUpdatable(boolean updatable) {
-        isUpdatable = updatable;
     }
 
     public void setColumnDefault(String columnDefault) {
