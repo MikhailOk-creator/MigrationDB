@@ -57,6 +57,7 @@ public class MigrationController {
             case "mysql":
                 connectionData.setDbDriverClassName("com.mysql.cj.jdbc.Driver");
                 connectionData.setDbms(DatabaseManagementSystem.MYSQL);
+                break;
             /*case "oracle":
                 connectionData.setDbDriverClassName("oracle.jdbc.driver.OracleDriver");
                 connectionData.setDbms("oracle");

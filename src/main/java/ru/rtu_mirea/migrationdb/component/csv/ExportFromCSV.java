@@ -1,6 +1,7 @@
 package ru.rtu_mirea.migrationdb.component.csv;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import ru.rtu_mirea.migrationdb.entity.DatabaseManagementSystem;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,7 +17,7 @@ public class ExportFromCSV {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public void exportCsvDataToTable(String tableName, ArrayList<String> generatedColumns) throws IOException {
+    public void exportCsvDataToTable(String tableName, ArrayList<String> generatedColumns, DatabaseManagementSystem nameOfDBMS) throws IOException {
         String nameOfCSVFile = "data_" + tableName + ".csv";
         String pathToCSVFile = csvDirectory + nameOfCSVFile;
 
@@ -25,7 +26,7 @@ public class ExportFromCSV {
                 .filter(path -> path.toString().endsWith(nameOfCSVFile))
                 .forEach(csvFile -> {
                     try {
-                        exportCsvFile(csvFile, tableName, generatedColumns);
+                        exportCsvFile(csvFile, tableName, generatedColumns, nameOfDBMS);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -39,8 +40,18 @@ public class ExportFromCSV {
         }
     }
 
-    private void exportCsvFile(Path csvFile, String tableName, ArrayList<String> generatedColumns) throws IOException {
-        String headerSql = String.format("SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = '%s'", tableName);
+    private void exportCsvFile(Path csvFile, String tableName, ArrayList<String> generatedColumns, DatabaseManagementSystem nameOfDBMS) throws IOException {
+        String headerSql;
+        switch (nameOfDBMS) {
+            case POSTGRESQL:
+                headerSql = String.format("SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = '%s'", tableName);
+                break;
+            case MYSQL:
+                headerSql = String.format("SELECT COLUMN_NAME AS column_name FROM information_schema.columns WHERE table_name = '%s' ORDER BY ordinal_position", tableName);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported DBMS");
+        }
         List<String> columnNames = jdbcTemplate.query(headerSql, (resultSet, i) -> resultSet.getString("column_name"));
         // Read data from CSV file
         Files.lines(csvFile).skip(1) // Skip header line

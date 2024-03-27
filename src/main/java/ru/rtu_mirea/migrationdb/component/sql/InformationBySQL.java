@@ -14,8 +14,13 @@ public class InformationBySQL {
     private final String sqlRepositoryMySQL = "src/main/resources/sql/mysql";
 
     public ArrayList<String> getNameOfAllTables(JdbcTemplate jdbcTemplate, DatabaseManagementSystem nameOfDBMS) throws Exception {
-        return (ArrayList<String>) jdbcTemplate.query(pathToSQLQuery(nameOfDBMS, "all_tables.sql"), (rs, rowNum) -> {
-            return rs.getString("table_name");
+        String sql = pathToSQLQuery(nameOfDBMS, "all_tables.sql");
+        return (ArrayList<String>) jdbcTemplate.query(sql, (rs, rowNum) -> {
+            if (nameOfDBMS == DatabaseManagementSystem.POSTGRESQL) {
+                return rs.getString("table_name");
+            } else {
+                return rs.getString("Tables_in_" + jdbcTemplate.getDataSource().getConnection().getCatalog());
+            }
         });
     }
 
@@ -47,15 +52,25 @@ public class InformationBySQL {
             columnInfo.setOrdinalPosition(rs.getInt("ordinal_position"));
             columnInfo.setNullable(rs.getString("is_nullable").equals("YES"));
             columnInfo.setDataType(rs.getString("udt_name"));
-            //columnInfo.setIdentity(rs.getString("is_identity").equals("YES"));
-            if (rs.getString("is_identity").equals("YES") || rs.getString("is_identity").equals("PRI")) {
-                columnInfo.setNullable(true);
-            }
-            // columnInfo.setIdentityGeneration(rs.getString("identity_generation"));
-            if (rs.getString("identity_generation").equals("ALWAYS") || rs.getString("identity_generation").equals("auto_increment")) {
-                columnInfo.setIdentityGeneration("ALWAYS");
-            } else {
-                columnInfo.setIdentityGeneration(null);
+            columnInfo.setIdentity(rs.getString("is_identity").equals("YES") || rs.getString("is_identity").equals("PRI"));
+            switch (nameOfDBMS) {
+                case POSTGRESQL:
+                    // columnInfo.setIdentityGeneration();
+                    if (rs.getString("identity_generation") == null) {
+                        columnInfo.setIdentityGeneration("");
+                    } else if (rs.getString("identity_generation").equals("ALWAYS")) {
+                        columnInfo.setIdentityGeneration("ALWAYS");
+                    } else {
+                        columnInfo.setIdentityGeneration("");
+                    }
+                    break;
+                case MYSQL:
+                    if (rs.getString("identity_generation").equals("auto_increment")) {
+                        columnInfo.setIdentityGeneration("ALWAYS");
+                    } else {
+                        columnInfo.setIdentityGeneration("");
+                    }
+                    break;
             }
             columnInfo.setColumnDefault(rs.getString("column_default"));
             return columnInfo;
@@ -74,15 +89,10 @@ public class InformationBySQL {
     }
 
     private String pathToSQLQuery (DatabaseManagementSystem nameOfDBMS, String sqlFile) throws Exception {
-        String source_sql;
-        switch (nameOfDBMS) {
-            case POSTGRESQL:
-                source_sql = readSqlFromFile(sqlRepositoryPostgres + "/" + sqlFile);
-            case MYSQL:
-                source_sql = readSqlFromFile(sqlRepositoryMySQL + '/' + sqlFile);
-            default:
-                source_sql = readSqlFromFile(sqlRepositoryPostgres + "/" + sqlFile);
-        }
-        return source_sql;
+        return switch (nameOfDBMS) {
+            case POSTGRESQL -> readSqlFromFile(sqlRepositoryPostgres + "/" + sqlFile);
+            case MYSQL -> readSqlFromFile(sqlRepositoryMySQL + '/' + sqlFile);
+            default -> throw new IllegalArgumentException("Unsupported DBMS");
+        };
     }
 }

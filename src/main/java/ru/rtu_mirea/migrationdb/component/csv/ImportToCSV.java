@@ -1,6 +1,7 @@
 package ru.rtu_mirea.migrationdb.component.csv;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import ru.rtu_mirea.migrationdb.entity.DatabaseManagementSystem;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -16,7 +17,7 @@ public class ImportToCSV {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public void importTableToCsv(String tableName) throws IOException {
+    public void importTableToCsv(String tableName, DatabaseManagementSystem dbms) throws IOException {
         String sql = String.format("SELECT * FROM %s", tableName);
         String outputFile = getOutputFilePath(tableName);
 
@@ -26,7 +27,7 @@ public class ImportToCSV {
         // Create the file and write data
         try (FileWriter csvWriter = new FileWriter(outputFile)) {
             // Write header
-            writeHeader(tableName, csvWriter);
+            writeHeader(tableName, csvWriter, dbms);
 
             // Write data
             List<String> rows = jdbcTemplate.query(sql, (resultSet, i) -> {
@@ -50,8 +51,15 @@ public class ImportToCSV {
         }
     }
 
-    private void writeHeader(String tableName, FileWriter csvWriter) throws IOException {
-        String headerSql = String.format("SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = '%s'", tableName);
+    private void writeHeader(String tableName, FileWriter csvWriter, DatabaseManagementSystem nameOfDBMS) throws IOException {
+        String headerSql = switch (nameOfDBMS) {
+            case POSTGRESQL ->
+                    String.format("SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = '%s'", tableName);
+            case MYSQL ->
+                    String.format("SELECT COLUMN_NAME AS column_name FROM information_schema.columns WHERE table_name = '%s' ORDER BY ordinal_position", tableName);
+            default -> throw new IllegalArgumentException("Unsupported DBMS");
+        };
+        assert headerSql != null;
         List<String> columnNames = jdbcTemplate.query(headerSql, (resultSet, i) -> resultSet.getString("column_name"));
 
         // Join column names with commas

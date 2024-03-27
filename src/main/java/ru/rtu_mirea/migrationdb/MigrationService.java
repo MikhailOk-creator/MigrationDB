@@ -133,16 +133,19 @@ public class MigrationService {
 
                 // get generated columns
                 for (ColumnInfo column : columns) {
-                    if (column.isIdentity()) {
+                    if (!column.getIdentityGeneration().isEmpty()) {
                         generatedColumns.add(column.getColumnName());
                     }
                 }
+
+                // Sort columns by ordinal position
+                columns.sort(Comparator.comparing(ColumnInfo::getOrdinalPosition));
 
                 log.info("Info about columns of all in table {}", table);
 
                 // Export data from all tables to CSV
                 try {
-                    importOrigToCSV.importTableToCsv(table);
+                    importOrigToCSV.importTableToCsv(table, connectionData1.getDbms());
                 } catch (IOException e) {
                     log.error("Error: {}", e.getMessage());
                     resultOfMigration.setStatus(false);
@@ -192,7 +195,7 @@ public class MigrationService {
                 log.info("Exporting data to table: {}", table);
                 configureForDBPostgres(jdbcTemplate2, connectionData2);
                 try {
-                    exportFromCSV.exportCsvDataToTable(table, generatedColumns);
+                    exportFromCSV.exportCsvDataToTable(table, generatedColumns, connectionData1.getDbms());
                     log.info("Data exported to table: {}", table);
                 } catch (IOException e) {
                     log.error("Error: {}", e.getMessage());
@@ -274,7 +277,6 @@ public class MigrationService {
 
     private void configureForDBPostgres(JdbcTemplate jdbcTemplate, ConnectionData connectionData) {
         String db1Url;
-        // TODO: switch (to low)
         if (connectionData.getDbms().toString().equals("oracle")) {
             db1Url = String.format("jdbc:oracle:thin:@%s:%d:%s", connectionData.getHost(), connectionData.getPort(), connectionData.getNameDB());
         } else {
