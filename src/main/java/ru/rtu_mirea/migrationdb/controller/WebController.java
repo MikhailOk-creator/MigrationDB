@@ -13,9 +13,11 @@ import ru.rtu_mirea.migrationdb.entity.ConnectionsDataDTO;
 @RequestMapping("/")
 public class WebController {
     private final MigrationController migrate;
+    private final DatabaseController database;
 
-    public WebController(MigrationController migrate) {
+    public WebController(MigrationController migrate, DatabaseController database) {
         this.migrate = migrate;
+        this.database = database;
     }
 
     @GetMapping("")
@@ -35,5 +37,12 @@ public class WebController {
             model.addAttribute("status", "Migration failed: " + e.getMessage());
             return "error";
         }
+    }
+
+    @GetMapping("migration_table")
+    public String migrateTable (Model model) {
+        ResponseEntity<?> response = database.getAllMigration();
+        model.addAttribute("migrations", response.getBody());
+        return "migration_table";
     }
 }
