@@ -26,7 +26,7 @@ public class DatabaseController {
     @GetMapping("")
     public ResponseEntity<?> getAllMigration() {
         try {
-            return ResponseEntity.ok(migrationRepository.findAll());
+            return ResponseEntity.ok(migrationRepository.findAllByOrderByEndTimeDesc());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Something wrong: " + e.getMessage());
         }
@@ -39,7 +39,7 @@ public class DatabaseController {
     @GetMapping("/details")
     public ResponseEntity<?> getAllMigrationDetails() {
         try {
-            return ResponseEntity.ok(migrationDetailRepository.findAll());
+            return ResponseEntity.ok(migrationDetailRepository.findAllByOrderByEndTimeDesc());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Something wrong: " + e.getMessage());
         }
@@ -52,7 +52,7 @@ public class DatabaseController {
     @GetMapping("/{migrationId}")
     public ResponseEntity<?> getDetailsOfMigration(@PathVariable(name = "migrationId") String uuidOfMigration) {
         try {
-            return ResponseEntity.ok(migrationDetailRepository.findByMigrationId(UUID.fromString(uuidOfMigration)));
+            return ResponseEntity.ok(migrationDetailRepository.findByMigrationIdOrderByEndTimeDesc(UUID.fromString(uuidOfMigration)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Something wrong: " + e.getMessage());
         }

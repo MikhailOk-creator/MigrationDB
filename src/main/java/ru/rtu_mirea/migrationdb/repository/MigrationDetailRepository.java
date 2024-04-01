@@ -8,4 +8,6 @@ import java.util.UUID;
 
 public interface MigrationDetailRepository extends JpaRepository<MigrationDetailData, UUID> {
     List<MigrationDetailData> findByMigrationId(UUID migrationId);
+    List<MigrationDetailData> findAllByOrderByEndTimeDesc();
+    List<MigrationDetailData> findByMigrationIdOrderByEndTimeDesc(UUID migrationId);
 }
