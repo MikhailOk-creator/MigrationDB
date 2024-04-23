@@ -41,3 +41,4 @@ out/
 *.log
 *.gz
 /logs
+data
