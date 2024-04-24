@@ -3,16 +3,16 @@ package ru.rtu_mirea.migrationdb.component.sql;
 import ru.rtu_mirea.migrationdb.entity.ColumnInfo;
 import ru.rtu_mirea.migrationdb.entity.RelationData;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class CreateSQL {
     public String createSQLForTable(String tableName,
-                                    ArrayList<ColumnInfo> tableColumns,
-                                    Map<String, ArrayList<RelationData>> relations,
-                                    Map<String, ArrayList<String>> primaryKeys) {
+                                    List<ColumnInfo> tableColumns,
+                                    Map<String, List<RelationData>> relations,
+                                    Map<String, List<String>> primaryKeys) {
         StringBuilder sql = new StringBuilder("CREATE TABLE IF NOT EXISTS " + tableName  + " (");
-        ArrayList<RelationData> tableRelations = relations.get(tableName);
+        List<RelationData> tableRelations = relations.get(tableName);
         int flag = 0;
         for (ColumnInfo column : tableColumns) {
             sql.append(column.columnName()).append(" ").append(column.dataType());
@@ -31,7 +31,7 @@ public class CreateSQL {
             if (column.columnDefault() != null) {
                 sql.append(" DEFAULT ").append(column.columnDefault());
             }
-            ArrayList<String> primaryKeysForTable = primaryKeys.get(tableName);
+            List<String> primaryKeysForTable = primaryKeys.get(tableName);
             if (primaryKeysForTable != null && primaryKeysForTable.size() == 1 && primaryKeysForTable.contains(column.columnName())) {
                 sql.append(" PRIMARY KEY");
             }
@@ -41,7 +41,7 @@ public class CreateSQL {
             }
         }
 
-        ArrayList<String> primaryKeysForTable = primaryKeys.get(tableName);
+        List<String> primaryKeysForTable = primaryKeys.get(tableName);
         if (primaryKeysForTable != null && primaryKeysForTable.size() > 1) {
             sql.append(", PRIMARY KEY (");
             for (int i = 0; i < primaryKeysForTable.size(); i++) {

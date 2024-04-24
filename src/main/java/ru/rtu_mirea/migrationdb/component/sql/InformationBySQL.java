@@ -7,15 +7,15 @@ import ru.rtu_mirea.migrationdb.entity.RelationData;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.List;
 
 public class InformationBySQL {
     private final String sqlRepositoryPostgres = "src/main/resources/sql/postgresql";
     private final String sqlRepositoryMySQL = "src/main/resources/sql/mysql";
 
-    public ArrayList<String> getNameOfAllTables(JdbcTemplate jdbcTemplate, DatabaseManagementSystem nameOfDBMS) throws Exception {
+    public List<String> getNameOfAllTables(JdbcTemplate jdbcTemplate, DatabaseManagementSystem nameOfDBMS) throws Exception {
         String sql = pathToSQLQuery(nameOfDBMS, "all_tables.sql");
-        return (ArrayList<String>) jdbcTemplate.query(sql, (rs, rowNum) -> {
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
             if (nameOfDBMS == DatabaseManagementSystem.POSTGRESQL) {
                 return rs.getString("table_name");
             } else {
@@ -24,16 +24,16 @@ public class InformationBySQL {
         });
     }
 
-    public ArrayList<String> getInfoAboutConnectionOfTablesToMatrix(String nameOfTable, JdbcTemplate jdbcTemplate, DatabaseManagementSystem nameOfDBMS) throws Exception {
+    public List<String> getInfoAboutConnectionOfTablesToMatrix(String nameOfTable, JdbcTemplate jdbcTemplate, DatabaseManagementSystem nameOfDBMS) throws Exception {
         String sql = String.format(pathToSQLQuery(nameOfDBMS, "table_connections.sql"), nameOfTable);
-        return  (ArrayList<String>) jdbcTemplate.query(sql, (rs, rowNum) -> {
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
             return rs.getString("foreign_table_name");
         });
     }
 
-    public ArrayList<RelationData> getInfoAboutConnectionOfTablesToClass (String nameOfTable, JdbcTemplate jdbcTemplate, DatabaseManagementSystem nameOfDBMS) throws Exception {
+    public List<RelationData> getInfoAboutConnectionOfTablesToClass (String nameOfTable, JdbcTemplate jdbcTemplate, DatabaseManagementSystem nameOfDBMS) throws Exception {
         String sql = String.format(pathToSQLQuery(nameOfDBMS, "table_connections.sql"), nameOfTable);
-        return (ArrayList<RelationData>) jdbcTemplate.query(sql, (rs, rowNum) -> {
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
             return new RelationData(
                     rs.getString("table_name"),
                     rs.getString("column_name"),
@@ -43,9 +43,9 @@ public class InformationBySQL {
         });
     }
 
-    public ArrayList<ColumnInfo> getInfoAboutColumnsOfTable(String nameOfTable, JdbcTemplate jdbcTemplate, DatabaseManagementSystem nameOfDBMS) throws Exception {
+    public List<ColumnInfo> getInfoAboutColumnsOfTable(String nameOfTable, JdbcTemplate jdbcTemplate, DatabaseManagementSystem nameOfDBMS) throws Exception {
         String sql = String.format(pathToSQLQuery(nameOfDBMS, "information_about_columns.sql"), nameOfTable);
-        return (ArrayList<ColumnInfo>) jdbcTemplate.query(sql, (rs, rowNum) -> {
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
             String IdentityGeneration = "";
             switch (nameOfDBMS) {
                 case POSTGRESQL:
@@ -80,9 +80,9 @@ public class InformationBySQL {
         });
     }
 
-    public ArrayList<String> getPrimaryKeyOfTable(String nameOfTable, JdbcTemplate jdbcTemplate, DatabaseManagementSystem nameOfDBMS) throws Exception {
+    public List<String> getPrimaryKeyOfTable(String nameOfTable, JdbcTemplate jdbcTemplate, DatabaseManagementSystem nameOfDBMS) throws Exception {
         String sql = String.format(pathToSQLQuery(nameOfDBMS, "primary_key_of_table.sql"), nameOfTable);
-        return (ArrayList<String>) jdbcTemplate.query(sql, (rs, rowNum) -> {
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
             return rs.getString("column_name");
         });
     }

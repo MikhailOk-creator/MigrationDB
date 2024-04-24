@@ -58,15 +58,15 @@ public class MigrationService {
 
         configureForDBPostgres(jdbcTemplate1, connectionData1);
         InformationBySQL informationBySQL = new InformationBySQL();
-        ArrayList<String> tables1 = informationBySQL.getNameOfAllTables(jdbcTemplate1, connectionData1.getDbms());
+        List<String> tables1 = informationBySQL.getNameOfAllTables(jdbcTemplate1, connectionData1.getDbms());
         log.info("Tables in {} database: {}", connectionData1.getNameDB(), tables1);
 
         // Matrix of connections between tables
         int[][] connections = new int[tables1.size()][tables1.size()];
-        Map<String, ArrayList<RelationData>> relations = new HashMap<>();
+        Map<String, List<RelationData>> relations = new HashMap<>();
         for (String table : tables1) {
             try {
-                ArrayList<String>connections_between_one = informationBySQL.getInfoAboutConnectionOfTablesToMatrix(table, jdbcTemplate1, connectionData1.getDbms());
+                List<String>connections_between_one = informationBySQL.getInfoAboutConnectionOfTablesToMatrix(table, jdbcTemplate1, connectionData1.getDbms());
                 relations.put(table, informationBySQL.getInfoAboutConnectionOfTablesToClass(table, jdbcTemplate1, connectionData1.getDbms()));
                 for (String connection : connections_between_one) {
                     int index = tables1.indexOf(connection);
@@ -89,7 +89,7 @@ public class MigrationService {
         }
         String result = g.topologicalSort();
         int[] resultArray = Arrays.stream(result.split(" ")).mapToInt(Integer::parseInt).toArray();
-        ArrayList<String> tables2_Sorted = new ArrayList<>();
+        List<String> tables2_Sorted = new ArrayList<>();
         // reverse array
         for (int i = 0; i < resultArray.length / 2; i++) {
             int temp = resultArray[i];
@@ -102,9 +102,9 @@ public class MigrationService {
         log.info("Tables in {} database sorted by topological sort: {}", connectionData1.getNameDB(), tables2_Sorted);
 
         // Get info about columns of tables and create tables
-        ArrayList<ColumnInfo> columns;
-        Map<String, ArrayList<String>> primaryKeys = new HashMap<>();
-        ArrayList<String> generatedColumns = new ArrayList<>();
+        List<ColumnInfo> columns;
+        Map<String, List<String>> primaryKeys = new HashMap<>();
+        List<String> generatedColumns = new ArrayList<>();
         ImportToCSV importOrigToCSV = new ImportToCSV(jdbcTemplate1);
         ExportFromCSV exportFromCSV = new ExportFromCSV(jdbcTemplate2);
         CreateSQL createSQL = new CreateSQL();
