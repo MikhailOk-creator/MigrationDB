@@ -5,7 +5,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./logs:/logs
+      - ./data/back:/logs
     depends_on:
       - database
     environment:
@@ -26,6 +26,8 @@ services:
       - POSTGRES_DB=migration_database
       - POSTGRES_USER=application
       - POSTGRES_PASSWORD=197319792001
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
 
   nginx:
     image: mikhailok/nginx-proxy:0.1

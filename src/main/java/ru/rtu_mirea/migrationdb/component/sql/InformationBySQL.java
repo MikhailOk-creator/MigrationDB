@@ -7,15 +7,15 @@ import ru.rtu_mirea.migrationdb.entity.RelationData;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.List;
 
 public class InformationBySQL {
     private final String sqlRepositoryPostgres = "src/main/resources/sql/postgresql";
     private final String sqlRepositoryMySQL = "src/main/resources/sql/mysql";
 
-    public ArrayList<String> getNameOfAllTables(JdbcTemplate jdbcTemplate, DatabaseManagementSystem nameOfDBMS) throws Exception {
+    public List<String> getNameOfAllTables(JdbcTemplate jdbcTemplate, DatabaseManagementSystem nameOfDBMS) throws Exception {
         String sql = pathToSQLQuery(nameOfDBMS, "all_tables.sql");
-        return (ArrayList<String>) jdbcTemplate.query(sql, (rs, rowNum) -> {
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
             if (nameOfDBMS == DatabaseManagementSystem.POSTGRESQL) {
                 return rs.getString("table_name");
             } else {
@@ -24,62 +24,65 @@ public class InformationBySQL {
         });
     }
 
-    public ArrayList<String> getInfoAboutConnectionOfTablesToMatrix(String nameOfTable, JdbcTemplate jdbcTemplate, DatabaseManagementSystem nameOfDBMS) throws Exception {
+    public List<String> getInfoAboutConnectionOfTablesToMatrix(String nameOfTable, JdbcTemplate jdbcTemplate, DatabaseManagementSystem nameOfDBMS) throws Exception {
         String sql = String.format(pathToSQLQuery(nameOfDBMS, "table_connections.sql"), nameOfTable);
-        return  (ArrayList<String>) jdbcTemplate.query(sql, (rs, rowNum) -> {
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
             return rs.getString("foreign_table_name");
         });
     }
 
-    public ArrayList<RelationData> getInfoAboutConnectionOfTablesToClass (String nameOfTable, JdbcTemplate jdbcTemplate, DatabaseManagementSystem nameOfDBMS) throws Exception {
+    public List<RelationData> getInfoAboutConnectionOfTablesToClass (String nameOfTable, JdbcTemplate jdbcTemplate, DatabaseManagementSystem nameOfDBMS) throws Exception {
         String sql = String.format(pathToSQLQuery(nameOfDBMS, "table_connections.sql"), nameOfTable);
-        return (ArrayList<RelationData>) jdbcTemplate.query(sql, (rs, rowNum) -> {
-            RelationData relationData = new RelationData();
-            relationData.setTableName(rs.getString("table_name"));
-            relationData.setColumnName(rs.getString("column_name"));
-            relationData.setRefTableName(rs.getString("foreign_table_name"));
-            relationData.setRefColumnName(rs.getString("foreign_column_name"));
-            return relationData;
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            return new RelationData(
+                    rs.getString("table_name"),
+                    rs.getString("column_name"),
+                    rs.getString("foreign_table_name"),
+                    rs.getString("foreign_column_name")
+            );
         });
     }
 
-    public ArrayList<ColumnInfo> getInfoAboutColumnsOfTable(String nameOfTable, JdbcTemplate jdbcTemplate, DatabaseManagementSystem nameOfDBMS) throws Exception {
+    public List<ColumnInfo> getInfoAboutColumnsOfTable(String nameOfTable, JdbcTemplate jdbcTemplate, DatabaseManagementSystem nameOfDBMS) throws Exception {
         String sql = String.format(pathToSQLQuery(nameOfDBMS, "information_about_columns.sql"), nameOfTable);
-        return (ArrayList<ColumnInfo>) jdbcTemplate.query(sql, (rs, rowNum) -> {
-            ColumnInfo columnInfo = new ColumnInfo();
-            columnInfo.setColumnName(rs.getString("column_name"));
-            columnInfo.setTableSchema(rs.getString("table_schema"));
-            columnInfo.setOrdinalPosition(rs.getInt("ordinal_position"));
-            columnInfo.setNullable(rs.getString("is_nullable").equals("YES"));
-            columnInfo.setDataType(rs.getString("udt_name"));
-            columnInfo.setIdentity(rs.getString("is_identity").equals("YES") || rs.getString("is_identity").equals("PRI"));
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            String IdentityGeneration = "";
             switch (nameOfDBMS) {
                 case POSTGRESQL:
                     // columnInfo.setIdentityGeneration();
                     if (rs.getString("identity_generation") == null) {
-                        columnInfo.setIdentityGeneration("");
+                        IdentityGeneration = "";
                     } else if (rs.getString("identity_generation").equals("ALWAYS")) {
-                        columnInfo.setIdentityGeneration("ALWAYS");
+                        IdentityGeneration = "ALWAYS";
                     } else {
-                        columnInfo.setIdentityGeneration("");
+                        IdentityGeneration = "";
                     }
                     break;
                 case MYSQL:
                     if (rs.getString("identity_generation").equals("auto_increment")) {
-                        columnInfo.setIdentityGeneration("ALWAYS");
+                        IdentityGeneration = "ALWAYS";
                     } else {
-                        columnInfo.setIdentityGeneration("");
+                        IdentityGeneration = "";
                     }
                     break;
             }
-            columnInfo.setColumnDefault(rs.getString("column_default"));
-            return columnInfo;
+
+            return new ColumnInfo(
+                    rs.getString("column_name"),
+                    rs.getString("table_schema"),
+                    rs.getInt("ordinal_position"),
+                    rs.getString("is_nullable").equals("YES"),
+                    rs.getString("udt_name"),
+                    rs.getString("is_identity").equals("YES") || rs.getString("is_identity").equals("PRI"),
+                    IdentityGeneration,
+                    rs.getString("column_default")
+            );
         });
     }
 
-    public ArrayList<String> getPrimaryKeyOfTable(String nameOfTable, JdbcTemplate jdbcTemplate, DatabaseManagementSystem nameOfDBMS) throws Exception {
+    public List<String> getPrimaryKeyOfTable(String nameOfTable, JdbcTemplate jdbcTemplate, DatabaseManagementSystem nameOfDBMS) throws Exception {
         String sql = String.format(pathToSQLQuery(nameOfDBMS, "primary_key_of_table.sql"), nameOfTable);
-        return (ArrayList<String>) jdbcTemplate.query(sql, (rs, rowNum) -> {
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
             return rs.getString("column_name");
         });
     }

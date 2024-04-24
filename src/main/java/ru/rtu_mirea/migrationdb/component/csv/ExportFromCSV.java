@@ -6,8 +6,8 @@ import ru.rtu_mirea.migrationdb.entity.DatabaseManagementSystem;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
 
 public class ExportFromCSV {
     private final JdbcTemplate jdbcTemplate;
@@ -17,7 +17,7 @@ public class ExportFromCSV {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public void exportCsvDataToTable(String tableName, ArrayList<String> generatedColumns, DatabaseManagementSystem nameOfDBMS) throws IOException {
+    public void exportCsvDataToTable(String tableName, List<String> generatedColumns, DatabaseManagementSystem nameOfDBMS) throws IOException {
         String nameOfCSVFile = "data_" + tableName + ".csv";
         String pathToCSVFile = csvDirectory + nameOfCSVFile;
 
@@ -40,7 +40,7 @@ public class ExportFromCSV {
         }
     }
 
-    private void exportCsvFile(Path csvFile, String tableName, ArrayList<String> generatedColumns, DatabaseManagementSystem nameOfDBMS) throws IOException {
+    private void exportCsvFile(Path csvFile, String tableName, List<String> generatedColumns, DatabaseManagementSystem nameOfDBMS) throws IOException {
         String headerSql;
         switch (nameOfDBMS) {
             case POSTGRESQL:
@@ -61,13 +61,13 @@ public class ExportFromCSV {
                 });
     }
 
-    private void insertDataIntoTable(String[] values, String tableName, List<String> columnNames, ArrayList<String> generatedColumns) {
+    private void insertDataIntoTable(String[] values, String tableName, List<String> columnNames, List<String> generatedColumns) {
         // Assuming the columns are in the same order as in the CSV file
         StringBuilder sql = new StringBuilder("INSERT INTO ")
                 .append(tableName)
                 .append(" (");
 
-        ArrayList<Integer> indexesOfGeneratedColumns = new ArrayList<>();
+        List<Integer> indexesOfGeneratedColumns = new ArrayList<>();
         for (int i = 0; i < columnNames.size(); i++) {
             if (!generatedColumns.contains(columnNames.get(i))) {
                 sql.append(columnNames.get(i));
