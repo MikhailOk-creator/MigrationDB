@@ -38,10 +38,10 @@ public class MigrationController {
             connectionData2 = setDBMS(connectionData2, connectionsDataDTO.getDbms2());
 
             ResultOfMigration result = migrationService.migration(connectionData1, connectionData2);
-            if (result.isStatus()) {
-                return ResponseEntity.ok(result.getMessage());
+            if (result.status()) {
+                return ResponseEntity.ok(result.message());
             } else {
-                return ResponseEntity.badRequest().body("Migration failed" + '\n' + result.getMessage());
+                return ResponseEntity.badRequest().body("Migration failed" + '\n' + result.message());
             }
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Migration failed: " + e.getMessage());

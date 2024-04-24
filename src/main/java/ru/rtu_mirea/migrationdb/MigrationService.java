@@ -35,18 +35,13 @@ public class MigrationService {
         JdbcTemplate jdbcTemplate2 = new JdbcTemplate();
         MigrationData migrationData = new MigrationData();
         MigrationDetailData migrationDetailData = new MigrationDetailData();
-        ResultOfMigration resultOfMigration = new ResultOfMigration();
 
         if (!checkConnectionToDatabase(jdbcTemplate1, connectionData1)) {
-            resultOfMigration.setStatus(false);
-            resultOfMigration.setMessage("Connection to " + connectionData1.getNameDB() + " database failed");
-            return resultOfMigration;
+            return new ResultOfMigration(false,"Connection to " + connectionData1.getNameDB() + " database failed");
         }
 
         if (!checkConnectionToDatabase(jdbcTemplate2, connectionData2)) {
-            resultOfMigration.setStatus(false);
-            resultOfMigration.setMessage("Connection to " + connectionData2.getNameDB() + " database failed");
-            return resultOfMigration;
+            return new ResultOfMigration(false,"Connection to " + connectionData2.getNameDB() + " database failed");
         }
 
         UUID migrationId = UUID.randomUUID();
@@ -68,7 +63,6 @@ public class MigrationService {
 
         // Matrix of connections between tables
         int[][] connections = new int[tables1.size()][tables1.size()];
-        // Map of connections between tables (key - table_name, value - list of relations (RelationData))
         Map<String, ArrayList<RelationData>> relations = new HashMap<>();
         for (String table : tables1) {
             try {
@@ -133,13 +127,13 @@ public class MigrationService {
 
                 // get generated columns
                 for (ColumnInfo column : columns) {
-                    if (!column.getIdentityGeneration().isEmpty()) {
-                        generatedColumns.add(column.getColumnName());
+                    if (!column.identityGeneration().isEmpty()) {
+                        generatedColumns.add(column.columnName());
                     }
                 }
 
                 // Sort columns by ordinal position
-                columns.sort(Comparator.comparing(ColumnInfo::getOrdinalPosition));
+                columns.sort(Comparator.comparing(ColumnInfo::ordinalPosition));
 
                 log.info("Info about columns of all in table {}", table);
 
@@ -148,14 +142,12 @@ public class MigrationService {
                     importOrigToCSV.importTableToCsv(table, connectionData1.getDbms());
                 } catch (IOException e) {
                     log.error("Error: {}", e.getMessage());
-                    resultOfMigration.setStatus(false);
-                    resultOfMigration.setMessage("Error to import data from " + table + " table." + '\n' +
-                            "Error: " + e.getMessage());
 
                     AbortMigration(migrationDetailData, migrationData, "Error to import data from " + table + " table." + '\n' +
                             "Error: " + e.getMessage(), startTimeForTable);
 
-                    return resultOfMigration;
+                    return new ResultOfMigration(false, "Error to import data from " + table + " table." + '\n' +
+                            "Error: " + e.getMessage());
                 }
 
                 // Create SQL for all tables
@@ -164,14 +156,12 @@ public class MigrationService {
                     log.info("SQL for creating table: {}", SQLScriptForCreatingTable);
                 } catch (Exception e) {
                     log.error("Error: {}", e.getMessage());
-                    resultOfMigration.setStatus(false);
-                    resultOfMigration.setMessage("Error to create SQL for " + table + " table." + '\n' +
-                            "Error: " + e.getMessage());
 
                     AbortMigration(migrationDetailData, migrationData, "Error to create SQL for " + table + " table." + '\n' +
                             "Error: " + e.getMessage(), startTimeForTable);
 
-                    return resultOfMigration;
+                    return new ResultOfMigration(false, "Error to create SQL for " + table + " table." + '\n' +
+                            "Error: " + e.getMessage());
                 }
 
                 // Create table in new database
@@ -182,14 +172,12 @@ public class MigrationService {
                     log.info("Table created in {} database", connectionData2.getNameDB());
                 } catch (Exception e) {
                     log.info("Error: {}", e.getMessage());
-                    resultOfMigration.setStatus(false);
-                    resultOfMigration.setMessage("Error to create table in " + connectionData2.getNameDB() + " database." + '\n' +
-                            "Error: " + e.getMessage());
 
                     AbortMigration(migrationDetailData, migrationData, "Error to create table in " + connectionData2.getNameDB() + " database." + '\n' +
                             "Error: " + e.getMessage(), startTimeForTable);
 
-                    return resultOfMigration;
+                    return new ResultOfMigration(false, "Error to create table in " + connectionData2.getNameDB() + " database." + '\n' +
+                            "Error: " + e.getMessage());
                 }
 
                 log.info("Exporting data to table: {}", table);
@@ -199,14 +187,12 @@ public class MigrationService {
                     log.info("Data exported to table: {}", table);
                 } catch (IOException e) {
                     log.error("Error: {}", e.getMessage());
-                    resultOfMigration.setStatus(false);
-                    resultOfMigration.setMessage("Error to export data to " + table + " table." + '\n' +
-                            "Error: " + e.getMessage());
 
                     AbortMigration(migrationDetailData, migrationData, "Error to export data to " + table + " table." + '\n' +
                             "Error: " + e.getMessage(), startTimeForTable);
 
-                    return resultOfMigration;
+                    return new ResultOfMigration(false, "Error to export data to " + table + " table." + '\n' +
+                            "Error: " + e.getMessage());
                 }
 
                 // Delete all CSV files from the project that have not been deleted for some reason
@@ -218,26 +204,22 @@ public class MigrationService {
                 migrationDetailRepository.save(migrationDetailData);
             } catch (Exception e) {
                 log.error("Error: {}", e.getMessage());
-                resultOfMigration.setStatus(false);
-                resultOfMigration.setMessage("Error to migrate " + table + " table." + '\n' +
-                        "Error: " + e.getMessage());
 
                 AbortMigration(migrationDetailData, migrationData, "Error to migrate " + table + " table." + '\n' +
                         "Error: " + e.getMessage(), startTimeForTable);
 
-                return resultOfMigration;
+                return new ResultOfMigration(false, "Error to migrate " + table + " table." + '\n' +
+                        "Error: " + e.getMessage());
             }
         }
         log.info("Migration successful!");
-        resultOfMigration.setStatus(true);
-        resultOfMigration.setMessage("Migration completed successfully");
 
         migrationData.setStatus(StatusOfMigration.DONE.toString());
         migrationData.setEndTime(new Timestamp(System.currentTimeMillis()));
         migrationData.setDuration((double) (new Date().getTime() - migrationData.getStartTime().getTime()));
         migrationRepository.save(migrationData);
 
-        return resultOfMigration;
+        return new ResultOfMigration(true, "Migration completed successfully");
     }
 
     private boolean checkConnectionToDatabase(JdbcTemplate jdbcTemplate, ConnectionData connectionData) {
@@ -278,9 +260,20 @@ public class MigrationService {
     private void configureForDBPostgres(JdbcTemplate jdbcTemplate, ConnectionData connectionData) {
         String db1Url;
         if (connectionData.getDbms().toString().equals("oracle")) {
-            db1Url = String.format("jdbc:oracle:thin:@%s:%d:%s", connectionData.getHost(), connectionData.getPort(), connectionData.getNameDB());
+            db1Url = String.format(
+                    "jdbc:oracle:thin:@%s:%d:%s",
+                    connectionData.getHost(),
+                    connectionData.getPort(),
+                    connectionData.getNameDB()
+            );
         } else {
-            db1Url = String.format("jdbc:%s://%s:%d/%s", connectionData.getDbms().toString().toLowerCase(), connectionData.getHost(), connectionData.getPort(), connectionData.getNameDB());
+            db1Url = String.format(
+                    "jdbc:%s://%s:%d/%s",
+                    connectionData.getDbms().toString().toLowerCase(),
+                    connectionData.getHost(),
+                    connectionData.getPort(),
+                    connectionData.getNameDB()
+            );
         }
 
         DataSource dataSource = DatabaseConfig.postgreSQLDataSource(db1Url, connectionData.getUsernameDB(), connectionData.getPasswordDB());
