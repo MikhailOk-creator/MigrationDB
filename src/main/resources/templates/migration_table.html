@@ -14,6 +14,7 @@
     <table  border="1">
         <thead>
             <tr>
+                <th>ID</th>
                 <th>Source Host</th>
                 <th>Source Port</th>
                 <th>Source Database</th>
@@ -29,6 +30,9 @@
         </thead>
         <tbody>
             <tr th:each="tempMigration:${migrations}">
+                <td>
+                    <a th:href="@{/migration_details/{uuid}(uuid=${tempMigration.id})}" th:text="${tempMigration.id}"></a>
+                </td>
                 <td th:text="${tempMigration.sourceHost}"/>
                 <td th:text="${tempMigration.sourcePort}"/>
                 <td th:text="${tempMigration.sourceDB}"/>

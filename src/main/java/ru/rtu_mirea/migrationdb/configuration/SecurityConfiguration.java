@@ -28,7 +28,13 @@ public class SecurityConfiguration {
                     return corsConfiguration;
                 }))
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/", "/migrate", "/history", "/migration_table").authenticated())
+                        .requestMatchers(
+                                "/",
+                                "/migrate",
+                                "/history/**",
+                                "/migration_table",
+                                "/migration_details/**"
+                        ).authenticated())
                 .httpBasic(Customizer.withDefaults());
         return httpSecurity.build();
     }

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Migration Details</title>
+</head>
+<body>
+<h1>Migration Details</h1>
+<br>
+<div>
+    <a href="/migration_table">Back to migration table</a>
+</div>
+<br>
+<table  border="1">
+    <thead>
+    <tr>
+        <th>Migration ID</th>
+        <th>Source Table</th>
+        <th>Target Table</th>
+        <th>Status</th>
+        <th>Start Time</th>
+        <th>End Time</th>
+        <th>Duration</th>
+        <th>Error Message</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="tempMigrationDetail:${details}">
+        <td th:text="${tempMigrationDetail.migrationId}"/>
+        <td th:text="${tempMigrationDetail.sourceTable}"/>
+        <td th:text="${tempMigrationDetail.targetTable}"/>
+        <td th:text="${tempMigrationDetail.status}"/>
+        <td th:text="${tempMigrationDetail.startTime}"/>
+        <td th:text="${tempMigrationDetail.endTime}"/>
+        <td th:text="${tempMigrationDetail.duration}"/>
+        <td th:text="${tempMigrationDetail.errorMessage}"/>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
