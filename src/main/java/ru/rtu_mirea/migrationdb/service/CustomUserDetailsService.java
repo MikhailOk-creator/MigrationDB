@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import ru.rtu_mirea.migrationdb.entity.Role;
 import ru.rtu_mirea.migrationdb.entity.User;
 import ru.rtu_mirea.migrationdb.repository.UserRepository;
 
@@ -32,7 +33,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         );
     }
 
-    private Collection<GrantedAuthority> getRoleAuthorities(String role) {
-        return Collections.singleton(new SimpleGrantedAuthority(role));
+    private Collection<GrantedAuthority> getRoleAuthorities(Role role) {
+        return Collections.singleton(new SimpleGrantedAuthority(role.name()));
     }
 }

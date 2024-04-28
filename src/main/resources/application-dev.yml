@@ -14,3 +14,8 @@ spring:
 logging:
   file:
     path: ./logs/
+
+admin:
+  username: admin
+  password: admin
+  email: admin

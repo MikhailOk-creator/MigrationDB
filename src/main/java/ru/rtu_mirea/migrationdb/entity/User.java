@@ -1,9 +1,6 @@
 package ru.rtu_mirea.migrationdb.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.util.UUID;
 
@@ -23,9 +20,10 @@ public class User {
     private String email;
 
     @Column(name = "role", nullable = false)
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
-    public User(UUID id, String username, String password, String email, String role) {
+    public User(UUID id, String username, String password, String email, Role role) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -68,11 +66,11 @@ public class User {
         this.email = email;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 }

@@ -14,6 +14,9 @@ services:
       - POSTGRES_DB=migration_database
       - POSTGRES_USER=application
       - POSTGRES_PASSWORD=197319792001
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=admin
+      - ADMIN_EMAIL=admin@example.com
 
   database:
     container_name: migration_database
