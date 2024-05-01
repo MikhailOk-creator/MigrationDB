@@ -11,6 +11,7 @@ import ru.rtu_mirea.migrationdb.entity.ResultOfMigration;
 
 @RestController
 @CrossOrigin(origins = "*")
+@RequestMapping("/api/migrate")
 public class MigrationController {
     private final MigrationService migrationService;
 
@@ -18,7 +19,7 @@ public class MigrationController {
         this.migrationService = migrationService;
     }
 
-    @PostMapping("/migrate")
+    @PostMapping("")
     public ResponseEntity<?> migrate(@RequestBody @Validated ConnectionsDataDTO connectionsDataDTO) {
         try {
             ConnectionData connectionData1 = new ConnectionData();

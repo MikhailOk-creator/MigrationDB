@@ -44,8 +44,8 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(
                                 "/",
-                                "/migrate",
-                                "/history/**",
+                                "/api/migrate",
+                                "/api/database/**",
                                 "/migration_table",
                                 "/migration_details/**"
                         ).authenticated())
