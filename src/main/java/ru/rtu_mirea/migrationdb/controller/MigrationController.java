@@ -5,7 +5,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.rtu_mirea.migrationdb.MigrationService;
 import ru.rtu_mirea.migrationdb.entity.ConnectionData;
-import ru.rtu_mirea.migrationdb.entity.ConnectionsDataDTO;
+import ru.rtu_mirea.migrationdb.dto.ConnectionsDataDTO;
 import ru.rtu_mirea.migrationdb.entity.DatabaseManagementSystem;
 import ru.rtu_mirea.migrationdb.entity.ResultOfMigration;
 

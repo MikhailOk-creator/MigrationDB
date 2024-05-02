@@ -4,7 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import ru.rtu_mirea.migrationdb.entity.ConnectionsDataDTO;
+import ru.rtu_mirea.migrationdb.dto.ConnectionsDataDTO;
 
 @Controller
 @RequestMapping("/")

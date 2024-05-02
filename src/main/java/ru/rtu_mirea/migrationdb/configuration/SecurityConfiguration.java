@@ -43,12 +43,16 @@ public class SecurityConfiguration {
                 }))
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(
+                                "/api/database/user/**"
+                        ).hasAuthority("ADMIN")
+                        .requestMatchers(
                                 "/",
                                 "/api/migrate",
                                 "/api/database/**",
                                 "/migration_table",
                                 "/migration_details/**"
-                        ).authenticated())
+                        ).authenticated()
+                )
                 .httpBasic(Customizer.withDefaults());
         return httpSecurity.build();
     }

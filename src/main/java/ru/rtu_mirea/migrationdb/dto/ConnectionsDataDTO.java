@@ -1,4 +1,4 @@
-package ru.rtu_mirea.migrationdb.entity;
+package ru.rtu_mirea.migrationdb.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;

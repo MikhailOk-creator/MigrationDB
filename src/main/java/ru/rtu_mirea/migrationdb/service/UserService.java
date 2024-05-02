@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
+import ru.rtu_mirea.migrationdb.dto.UserDTO;
 import ru.rtu_mirea.migrationdb.entity.Role;
 import ru.rtu_mirea.migrationdb.entity.User;
 import ru.rtu_mirea.migrationdb.repository.UserRepository;
@@ -43,6 +44,28 @@ public class UserService {
             }
         } catch (Exception e) {
             log.error("Something wrong: {}", e);
+        }
+    }
+
+    public boolean registrationOfNewUser (UserDTO user) {
+        try {
+            if (!user.getUsername().isEmpty()
+                    || !user.getPassword().isEmpty()
+                    || !user.getEmail().isEmpty()) {
+                userRepository.save(
+                        new User(UUID.randomUUID(), user.getUsername(),
+                                new BCryptPasswordEncoder().encode(user.getPassword()),
+                                user.getEmail(), Role.USER)
+                );
+                log.info("Admin added");
+                return true;
+            } else {
+                log.error("Please check Please check the correctness of the entered data");
+                return false;
+            }
+        } catch (Exception e) {
+            log.error("Something wrong: {}", e);
+            return false;
         }
     }
 

@@ -1,10 +1,14 @@
 package ru.rtu_mirea.migrationdb.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.rtu_mirea.migrationdb.dto.UserDTO;
+import ru.rtu_mirea.migrationdb.entity.User;
 import ru.rtu_mirea.migrationdb.repository.MigrationDetailRepository;
 import ru.rtu_mirea.migrationdb.repository.MigrationRepository;
 import ru.rtu_mirea.migrationdb.repository.UserRepository;
+import ru.rtu_mirea.migrationdb.service.UserService;
 
 import java.util.UUID;
 
@@ -15,13 +19,16 @@ public class DatabaseController {
     private final MigrationRepository migrationRepository;
     private final MigrationDetailRepository migrationDetailRepository;
     private final UserRepository userRepository;
+    private final UserService userService;
 
     public DatabaseController(MigrationRepository migrationRepository,
                               MigrationDetailRepository migrationDetailRepository,
-                              UserRepository userRepository) {
+                              UserRepository userRepository,
+                              UserService userService) {
         this.migrationRepository = migrationRepository;
         this.migrationDetailRepository = migrationDetailRepository;
         this.userRepository = userRepository;
+        this.userService = userService;
     }
 
     /**
@@ -63,7 +70,7 @@ public class DatabaseController {
         }
     }
 
-    @GetMapping("/users")
+    @GetMapping("/user/all")
     public ResponseEntity<?> getAllUsers() {
         try {
             return ResponseEntity.ok(userRepository.findAll());
@@ -71,4 +78,18 @@ public class DatabaseController {
             return ResponseEntity.badRequest().body("Something wrong: " + e.getMessage());
         }
     }
+
+    @PostMapping("/user/add")
+    public ResponseEntity<?> addNewUser(@Valid @RequestBody UserDTO newUser) {
+        try {
+            if (userService.registrationOfNewUser(newUser)) {
+                return ResponseEntity.ok("User added successfully");
+            } else {
+                return ResponseEntity.badRequest().body("User didn't added successfully");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Something wrong: " + e.getMessage());
+        }
+    }
+
 }
