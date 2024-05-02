@@ -39,6 +39,8 @@ public class MigrationData {
     private double duration;
     @Column(name = "error_message")
     private String errorMessage;
+    @Column(name = "user_that_started", nullable = false)
+    private String userThatStartedMigration;
 
     public UUID getId() {
         return id;
@@ -134,5 +136,13 @@ public class MigrationData {
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public String getUserThatStartedMigration() {
+        return userThatStartedMigration;
+    }
+
+    public void setUserThatStartedMigration(String userThatStartedMigration) {
+        this.userThatStartedMigration = userThatStartedMigration;
     }
 }

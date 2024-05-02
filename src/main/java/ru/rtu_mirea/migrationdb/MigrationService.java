@@ -3,6 +3,8 @@ package ru.rtu_mirea.migrationdb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import ru.rtu_mirea.migrationdb.component.*;
 import ru.rtu_mirea.migrationdb.component.csv.ExportFromCSV;
@@ -35,6 +37,7 @@ public class MigrationService {
         JdbcTemplate jdbcTemplate2 = new JdbcTemplate();
         MigrationData migrationData = new MigrationData();
         MigrationDetailData migrationDetailData = new MigrationDetailData();
+        User authorizedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!checkConnectionToDatabase(jdbcTemplate1, connectionData1)) {
             return new ResultOfMigration(false,"Connection to " + connectionData1.getNameDB() + " database failed");
@@ -54,6 +57,7 @@ public class MigrationService {
         migrationData.setTargetDB(connectionData2.getNameDB());
         migrationData.setStatus(StatusOfMigration.MIGRATING.toString());
         migrationData.setStartTime(new Timestamp(System.currentTimeMillis()));
+        migrationData.setUserThatStartedMigration(authorizedUser.getUsername());
         migrationRepository.save(migrationData);
 
         configureForDBPostgres(jdbcTemplate1, connectionData1);

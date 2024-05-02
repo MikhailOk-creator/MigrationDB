@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS migration_t (
     start_time timestamp not null,
     end_time timestamp,
     duration float,
-    error_message text
+    error_message text,
+    user_that_started varchar(255) not null
 );
 
 CREATE TABLE IF NOT EXISTS migration_detail_t (
@@ -24,4 +25,12 @@ CREATE TABLE IF NOT EXISTS migration_detail_t (
     duration float,
     error_message text,
     foreign key (migration_id) references migration_t(id)
+);
+
+CREATE TABLE IF NOT EXISTS user_t (
+    id UUID not null primary key,
+    username varchar(255) not null,
+    password varchar(255) not null,
+    email varchar(255) not null,
+    role varchar(255) not null
 );

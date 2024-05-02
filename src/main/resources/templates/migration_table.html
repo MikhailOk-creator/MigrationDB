@@ -26,6 +26,7 @@
                 <th>End Time</th>
                 <th>Duration</th>
                 <th>Error Message</th>
+                <th>User that started migration</th>
             </tr>
         </thead>
         <tbody>
@@ -44,6 +45,7 @@
                 <td th:text="${tempMigration.endTime}"/>
                 <td th:text="${tempMigration.duration}"/>
                 <td th:text="${tempMigration.errorMessage}"/>
+                <td th:text="${tempMigration.userThatStartedMigration}"/>
             </tr>
         </tbody>
     </table>
