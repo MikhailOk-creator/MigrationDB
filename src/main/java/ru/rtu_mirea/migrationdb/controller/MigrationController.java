@@ -3,7 +3,7 @@ package ru.rtu_mirea.migrationdb.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.rtu_mirea.migrationdb.MigrationService;
+import ru.rtu_mirea.migrationdb.service.MigrationService;
 import ru.rtu_mirea.migrationdb.entity.ConnectionData;
 import ru.rtu_mirea.migrationdb.dto.ConnectionsDataDTO;
 import ru.rtu_mirea.migrationdb.entity.DatabaseManagementSystem;

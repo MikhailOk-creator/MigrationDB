@@ -1,4 +1,4 @@
-package ru.rtu_mirea.migrationdb;
+package ru.rtu_mirea.migrationdb.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
