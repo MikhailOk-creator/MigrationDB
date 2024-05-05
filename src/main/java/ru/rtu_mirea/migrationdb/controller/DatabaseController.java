@@ -92,4 +92,17 @@ public class DatabaseController {
         }
     }
 
+    @PostMapping("/admin/add")
+    public ResponseEntity<?> addNewAdmin(@Valid @RequestBody UserDTO newUser) {
+        try {
+            if (userService.registrationOfNewAdmin(newUser)) {
+                return ResponseEntity.ok("Admin added successfully");
+            } else {
+                return ResponseEntity.badRequest().body("Admin didn't added successfully");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Something wrong: " + e.getMessage());
+        }
+    }
+
 }

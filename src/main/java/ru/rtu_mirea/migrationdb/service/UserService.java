@@ -40,7 +40,7 @@ public class UserService {
                 );
                 log.info("Admin added");
             } else {
-                log.error("Please check Please check the correctness of the entered data");
+                log.error("User didn't added successfully. Please check the correctness of the entered data from env-file");
             }
         } catch (Exception e) {
             log.error("Something wrong: {}", e);
@@ -57,10 +57,32 @@ public class UserService {
                                 new BCryptPasswordEncoder().encode(user.getPassword()),
                                 user.getEmail(), Role.USER)
                 );
-                log.info("Admin added");
+                log.info("User {} added", user.getUsername());
                 return true;
             } else {
-                log.error("Please check Please check the correctness of the entered data");
+                log.error("Admin didn't added successfully. Please check the correctness of the entered data");
+                return false;
+            }
+        } catch (Exception e) {
+            log.error("Something wrong: {}", e);
+            return false;
+        }
+    }
+
+    public boolean registrationOfNewAdmin (UserDTO user) {
+        try {
+            if (!user.getUsername().isEmpty()
+                    || !user.getPassword().isEmpty()
+                    || !user.getEmail().isEmpty()) {
+                userRepository.save(
+                        new User(UUID.randomUUID(), user.getUsername(),
+                                new BCryptPasswordEncoder().encode(user.getPassword()),
+                                user.getEmail(), Role.ADMIN)
+                );
+                log.info("New admin {} added", user.getUsername());
+                return true;
+            } else {
+                log.error("Admin didn't added successfully on start. Please check the correctness of the entered data");
                 return false;
             }
         } catch (Exception e) {
