@@ -1,12 +1,12 @@
 services:
   database:
-    container_name: migration_database
+    container_name: migration_database_dev
     image: postgres:15-alpine
     ports:
       - "5433:5432"
     environment:
-      - POSTGRES_HOST=migration_database
+      - POSTGRES_HOST=migration_database_dev
       - POSTGRES_PORT=5432
-      - POSTGRES_DB=migration_database
+      - POSTGRES_DB=migration_database_dev
       - POSTGRES_USER=application
       - POSTGRES_PASSWORD=197319792001

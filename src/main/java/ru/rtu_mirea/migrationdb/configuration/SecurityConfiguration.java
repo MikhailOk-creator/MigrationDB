@@ -52,6 +52,10 @@ public class SecurityConfiguration {
                                 "/migration_table",
                                 "/migration_details/**"
                         ).authenticated()
+                        .requestMatchers(
+                                "/api-docs",
+                                "/swagger-ui/**"
+                        ).permitAll()
                 )
                 .httpBasic(Customizer.withDefaults());
         return httpSecurity.build();
