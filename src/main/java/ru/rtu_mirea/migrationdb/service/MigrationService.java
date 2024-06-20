@@ -20,6 +20,11 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.*;
 
+/**
+ * Main method of the service. This service can connect and migrate data between relation databases.
+ * @author Mikahil Okhapkin
+ * @version 1.0
+ */
 @Service
 public class MigrationService {
     private final MigrationRepository migrationRepository;
@@ -32,6 +37,19 @@ public class MigrationService {
 
     Logger log = LoggerFactory.getLogger(MigrationService.class);
 
+    /**
+     * Method for migration data between databases.
+     * This class checks the connection to databases.
+     * Then it collects information about the source database.
+     * Next, it sorts the order of the tables for migration.
+     * Next, perform the table migration process according to this order.
+     * @param connectionData1 Data for connection to the first database. Include host, port, name of database, username, password.
+     * @param connectionData2 Data for connection to the first database. Include the same data as the first connection.
+     * @return Result of migration. Include status (true or false) and message.
+     * @throws Exception If something goes wrong
+     * @see ConnectionData
+     * @see ResultOfMigration
+     */
     public ResultOfMigration migration(ConnectionData connectionData1, ConnectionData connectionData2) throws Exception {
         JdbcTemplate jdbcTemplate1 = new JdbcTemplate();
         JdbcTemplate jdbcTemplate2 = new JdbcTemplate();
@@ -226,6 +244,13 @@ public class MigrationService {
         return new ResultOfMigration(true, "Migration completed successfully");
     }
 
+    /**
+     * Method to check connection to database.
+     * @param jdbcTemplate - object for connection to database
+     * @param connectionData - data for connection to database
+     * @return boolean status of test connection
+     * @see ConnectionData
+     */
     private boolean checkConnectionToDatabase(JdbcTemplate jdbcTemplate, ConnectionData connectionData) {
         try{
             configureForDBPostgres(jdbcTemplate, connectionData);
@@ -248,6 +273,13 @@ public class MigrationService {
         }
     }
 
+    /**
+     * A class for write data about abort migration and its details in the application's database.
+     * @param migrationDetailData Data about the migration of a specific table during which an execution error occurred.
+     * @param migrationData Data about the migration in which an execution error occurred.
+     * @param message The message with error.
+     * @param startTimeForTable Time of start migrate of specific table. Use for calculation duration of migrations.
+     */
     private void AbortMigration(MigrationDetailData migrationDetailData, MigrationData migrationData, String message, Date startTimeForTable) {
         migrationDetailData.setStatus(StatusOfMigration.ABORTED.toString());
         migrationDetailData.setEndTime(new Timestamp(System.currentTimeMillis()));
