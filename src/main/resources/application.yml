@@ -2,9 +2,9 @@ spring:
   application:
     name: migration-db
   datasource:
-    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
-    username: ${POSTGRES_USER}
-    password: ${POSTGRES_PASSWORD}
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:migration_database}
+    username: ${POSTGRES_USER:application}
+    password: ${POSTGRES_PASSWORD:197319792001}
     driver-class-name: org.postgresql.Driver
   jpa:
     database: postgresql
@@ -20,6 +20,6 @@ springdoc:
     path: /api-docs
 
 admin:
-  username: ${ADMIN_USERNAME}
-  password: ${ADMIN_PASSWORD}
-  email: ${ADMIN_EMAIL}
+  username: ${ADMIN_USERNAME:admin}
+  password: ${ADMIN_PASSWORD:admin}
+  email: ${ADMIN_EMAIL:admin@example.com}
