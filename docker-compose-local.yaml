@@ -5,7 +5,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./data/back:/logs
+      - ./data/back:/application/logs
     depends_on:
       - database
     environment:

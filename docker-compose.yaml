@@ -1,11 +1,11 @@
 services:
   app:
     container_name: migration_app
-    build: .
+    image: mikhailok/migration-db:1.1
     ports:
       - "8080:8080"
     volumes:
-      - ./data/back:/logs
+      - ./data/back:/application/logs
     depends_on:
       - database
     environment:
