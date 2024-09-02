@@ -1,6 +1,6 @@
 # MigrationDB
 Application for data migration between relational databases.
-* Backend: Java 21 + Spring Boot
+* Backend: Java 17 + Spring Boot 3
 * Database: PostgreSQL 15
 ---
 This application can migrate data (tables and their relationships) between relational databases.
