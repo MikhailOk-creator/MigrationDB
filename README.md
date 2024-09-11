@@ -18,6 +18,19 @@ Before starting the application for the first time, specify the data for connect
 A file with data for the application database and admin data (located in root): ```.env```. 
 Also, you specify all the necessary data in the environment section in docker-compose files.
 
+A list of global variables and their approximate data:
+```env
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5433
+POSTGRES_DB=migration_database
+POSTGRES_USER=application
+POSTGRES_PASSWORD=su
+
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin
+ADMIN_EMAIL=admin@example.com
+```
+
 ---
 To start the migration process, you can transfer data to connect to the source and target databases through the API or in the web interface.
 To open the web interface, you need to come either to the application port, or go to port 80 (if the Nginx web server was also running).
@@ -59,4 +72,4 @@ The project also presents 2 main and 1 for the development of docker-compose fil
 * ```docker-compose-local.yaml``` - to run the application using Dockerfile's and other files that are uploaded to disk. The exception is the database, the image for it is also taken from Docker Hub.
 
 **Attention!**
-At the moment, uploading images to the Docker Hub is a problem. Therefore, the developer recommends using ```docker-compose-local.yaml``` file to run the current version of the application.
+At the moment, uploading images to the Docker Hub may be a problem. Therefore, you can avoid this problem by running using docker-compose-local.yaml file to run the current version of the application. At the moment, images in Docker Hub are relevant.

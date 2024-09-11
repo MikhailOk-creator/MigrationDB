@@ -13,7 +13,7 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=migration_database
       - POSTGRES_USER=application
-      - POSTGRES_PASSWORD=197319792001
+      - POSTGRES_PASSWORD=su
       - ADMIN_USERNAME=admin
       - ADMIN_PASSWORD=admin
       - ADMIN_EMAIL=admin@example.com
@@ -28,7 +28,7 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=migration_database
       - POSTGRES_USER=application
-      - POSTGRES_PASSWORD=197319792001
+      - POSTGRES_PASSWORD=su
     volumes:
       - ./data/db:/var/lib/postgresql/data
 

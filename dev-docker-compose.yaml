@@ -9,4 +9,4 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=migration_database_dev
       - POSTGRES_USER=application
-      - POSTGRES_PASSWORD=197319792001
+      - POSTGRES_PASSWORD=su
