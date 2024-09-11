@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.rtu_mirea.migrationdb.service.MigrationService;
 import ru.rtu_mirea.migrationdb.entity.ConnectionData;
 import ru.rtu_mirea.migrationdb.dto.ConnectionsDataDTO;
-import ru.rtu_mirea.migrationdb.entity.DatabaseManagementSystem;
+import ru.rtu_mirea.migrationdb.enums.DatabaseManagementSystem;
 import ru.rtu_mirea.migrationdb.entity.ResultOfMigration;
 
 @RestController

@@ -1,7 +1,7 @@
 package ru.rtu_mirea.migrationdb.component.csv;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import ru.rtu_mirea.migrationdb.entity.DatabaseManagementSystem;
+import ru.rtu_mirea.migrationdb.enums.DatabaseManagementSystem;
 
 import java.io.FileWriter;
 import java.io.IOException;

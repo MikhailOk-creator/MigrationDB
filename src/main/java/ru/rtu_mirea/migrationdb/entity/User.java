@@ -1,6 +1,7 @@
 package ru.rtu_mirea.migrationdb.entity;
 
 import jakarta.persistence.*;
+import ru.rtu_mirea.migrationdb.enums.Role;
 
 import java.util.UUID;
 

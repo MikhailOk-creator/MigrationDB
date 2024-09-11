@@ -1,5 +1,7 @@
 package ru.rtu_mirea.migrationdb.entity;
 
+import ru.rtu_mirea.migrationdb.enums.DatabaseManagementSystem;
+
 public class ConnectionData {
     private DatabaseManagementSystem dbms;
     private String host;

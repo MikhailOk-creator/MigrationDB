@@ -1,4 +1,4 @@
-package ru.rtu_mirea.migrationdb.entity;
+package ru.rtu_mirea.migrationdb.enums;
 
 public enum Role {
     ADMIN,

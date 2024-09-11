@@ -6,7 +6,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
 import ru.rtu_mirea.migrationdb.dto.UserDTO;
-import ru.rtu_mirea.migrationdb.entity.Role;
+import ru.rtu_mirea.migrationdb.enums.Role;
 import ru.rtu_mirea.migrationdb.entity.User;
 import ru.rtu_mirea.migrationdb.repository.UserRepository;
 

@@ -1,6 +1,6 @@
 package ru.rtu_mirea.migrationdb.component.sql;
 
-import ru.rtu_mirea.migrationdb.entity.DatabaseManagementSystem;
+import ru.rtu_mirea.migrationdb.enums.DatabaseManagementSystem;
 
 public class SQLScript {
     private String allTables;

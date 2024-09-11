@@ -13,6 +13,7 @@ import ru.rtu_mirea.migrationdb.component.sql.CreateSQL;
 import ru.rtu_mirea.migrationdb.component.sql.DatabaseConfig;
 import ru.rtu_mirea.migrationdb.component.sql.InformationBySQL;
 import ru.rtu_mirea.migrationdb.entity.*;
+import ru.rtu_mirea.migrationdb.enums.StatusOfMigration;
 import ru.rtu_mirea.migrationdb.repository.*;
 
 import javax.sql.DataSource;

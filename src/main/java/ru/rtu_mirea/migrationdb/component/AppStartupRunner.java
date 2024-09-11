@@ -3,7 +3,7 @@ package ru.rtu_mirea.migrationdb.component;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
-import ru.rtu_mirea.migrationdb.entity.Role;
+import ru.rtu_mirea.migrationdb.enums.Role;
 import ru.rtu_mirea.migrationdb.repository.UserRepository;
 import ru.rtu_mirea.migrationdb.service.UserService;
 
@@ -19,7 +19,7 @@ public class AppStartupRunner implements ApplicationRunner {
     }
 
     @Override
-    public void run(ApplicationArguments args) throws Exception {
+    public void run(ApplicationArguments args) {
         if(userRepository.findByRole(Role.ADMIN).isEmpty()) {
             userService.addStartAdmin();
         }
